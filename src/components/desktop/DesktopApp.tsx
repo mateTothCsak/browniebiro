@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import type { Restaurant, ActiveView } from '@/types';
-import { scoreClass } from '@/lib/data';
 import TopBar from './TopBar';
 import RestaurantSidebar from './RestaurantSidebar';
 import RestaurantDetail from './RestaurantDetail';
+import SubmitReview from './SubmitReview';
 
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), { ssr: false });
 
@@ -15,10 +17,24 @@ interface DesktopAppProps {
 }
 
 export default function DesktopApp({ restaurants }: DesktopAppProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [activeView, setActiveView] = useState<ActiveView>('map');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '');
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(() => {
+    const focusId = searchParams.get('focus');
+    return focusId ? (restaurants.find((r) => r.id === focusId) ?? null) : null;
+  });
   const [showSubmitReview, setShowSubmitReview] = useState(false);
+
+  // Sync search query to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchQuery) params.set('q', searchQuery); else params.delete('q');
+    if (selectedRestaurant) params.set('focus', selectedRestaurant.id); else params.delete('focus');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [searchQuery, selectedRestaurant]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();
@@ -114,11 +130,30 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
         />
       )}
 
-      {/* Submit review — coming soon */}
+      {/* Footer */}
+      <footer style={{
+        padding: '8px 28px',
+        background: 'var(--bb-paper)',
+        borderTop: '1px solid var(--bb-line)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: 11,
+        color: 'var(--bb-cocoa-2)',
+        flexShrink: 0,
+      }}>
+        <span>Nem hivatalos rajongói oldal · független értékelések</span>
+        <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600 }}>
+          Impresszum
+        </Link>
+      </footer>
+
+      {/* Submit review */}
       {showSubmitReview && selectedRestaurant && (
-        <SubmitPlaceholder
-          restaurantName={selectedRestaurant.name}
+        <SubmitReview
+          restaurant={selectedRestaurant}
           onClose={() => setShowSubmitReview(false)}
+          onSuccess={() => { setShowSubmitReview(false); setSelectedRestaurant(null); }}
         />
       )}
     </div>
@@ -230,28 +265,3 @@ function ProfilePlaceholder() {
   );
 }
 
-function SubmitPlaceholder({ restaurantName, onClose }: { restaurantName: string; onClose: () => void }) {
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(26,20,16,0.45)', backdropFilter: 'blur(2px)', zIndex: 40 }} />
-      <div className="bb-rise" style={{
-        position: 'fixed', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '100%', maxWidth: 480,
-        background: 'var(--bb-cream)', borderRadius: 'var(--bb-radius-xl)',
-        padding: 32, zIndex: 50,
-        boxShadow: 'var(--bb-shadow-lg)',
-        textAlign: 'center',
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🍫</div>
-        <h3 style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 22, color: 'var(--bb-cocoa)', margin: '0 0 8px' }}>
-          Értékeld: {restaurantName}
-        </h3>
-        <p style={{ fontSize: 14, color: 'var(--bb-cocoa-2)', marginBottom: 24 }}>
-          A beküldési folyamat hamarosan elérhető lesz.
-        </p>
-        <button onClick={onClose} className="bb-btn bb-btn-secondary">Bezárás</button>
-      </div>
-    </>
-  );
-}

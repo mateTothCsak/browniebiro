@@ -1,6 +1,11 @@
+import { Suspense } from 'react';
 import DesktopApp from '@/components/desktop/DesktopApp';
 import { HU_RESTAURANTS } from '@/lib/data';
 
 export default function Page() {
-  return <DesktopApp restaurants={HU_RESTAURANTS} />;
+  return (
+    <Suspense>
+      <DesktopApp restaurants={HU_RESTAURANTS} />
+    </Suspense>
+  );
 }

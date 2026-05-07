@@ -1,8 +1,2 @@
-import { createBrowserClient } from '@supabase/ssr';
-
-export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-}
+// Canonical client is at @/utils/supabase/client — use that going forward.
+export { createClient } from '@/utils/supabase/client';

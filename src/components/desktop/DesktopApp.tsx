@@ -36,13 +36,16 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
   });
   const [showSubmitReview, setShowSubmitReview] = useState(false);
 
-  // Sync search query to URL
+  // Sync search query to URL. history.replaceState instead of router.replace:
+  // the page is force-dynamic, so router.replace would re-render the server
+  // component (and re-query the DB) on every keystroke.
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     if (searchQuery) params.set('q', searchQuery); else params.delete('q');
     if (selectedRestaurant) params.set('focus', keyOf(selectedRestaurant)); else params.delete('focus');
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [searchQuery, selectedRestaurant]); // eslint-disable-line react-hooks/exhaustive-deps
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
+  }, [searchQuery, selectedRestaurant]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase();

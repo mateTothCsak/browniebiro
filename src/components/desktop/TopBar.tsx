@@ -118,6 +118,12 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
           </button>
 
           {menuOpen && (
+            <div
+              onClick={() => setMenuOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 25 }}
+            />
+          )}
+          {menuOpen && (
             <div style={{
               position: 'absolute', right: 0, top: 'calc(100% + 10px)',
               background: 'var(--bb-paper)',

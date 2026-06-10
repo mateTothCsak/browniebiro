@@ -1,7 +1,8 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { Map as LeafletMapInstance, Marker } from 'leaflet';
 import type { Restaurant } from '@/types';
 import { scoreClass } from '@/lib/data';
 
@@ -13,14 +14,22 @@ interface LeafletMapProps {
 
 export default function LeafletMap({ restaurants, selectedId, onSelect }: LeafletMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapRef = useRef<LeafletMapInstance | null>(null);
+  const markersRef = useRef<Marker[]>([]);
+  // Flipped once the async Leaflet import finishes, so the marker effect
+  // re-runs after the map actually exists (it races the import otherwise).
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    // `cancelled` guards the StrictMode double-mount: the first mount's
+    // pending import must not create a second map in the same container.
+    let cancelled = false;
+    let map: LeafletMapInstance | null = null;
 
     import('leaflet').then((L) => {
-      const map = L.map(containerRef.current!, {
+      if (cancelled || !containerRef.current || mapRef.current) return;
+
+      map = L.map(containerRef.current, {
         center: [47.16, 19.50],
         zoom: 7,
         minZoom: 6,
@@ -40,22 +49,25 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
       }).addTo(map);
 
       mapRef.current = map;
-      setTimeout(() => map.invalidateSize(), 60);
+      setTimeout(() => map?.invalidateSize(), 60);
+      setReady(true);
     });
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+      cancelled = true;
+      map?.remove();
+      mapRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!ready || !map) return;
+    let cancelled = false;
 
     import('leaflet').then((L) => {
+      if (cancelled || mapRef.current !== map) return;
+
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
 
@@ -85,7 +97,9 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
         markersRef.current.push(marker);
       });
     });
-  }, [restaurants, selectedId, onSelect]);
+
+    return () => { cancelled = true; };
+  }, [restaurants, selectedId, onSelect, ready]);
 
   return (
     <div

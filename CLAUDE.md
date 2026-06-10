@@ -14,7 +14,8 @@ If you suspect a secret was accidentally staged, run `git reset HEAD <file>` imm
 - **Framework:** Next.js 16 (App Router, `src/` directory layout)
 - **Styling:** Tailwind CSS v4 + custom BB design tokens (CSS variables)
 - **Database:** Supabase (PostgreSQL) — see `supabase/migrations/`
-- **Auth:** Supabase Auth (email + Google OAuth)
+- **Auth:** Supabase Auth — email+password (live, `AuthModal.tsx`); Google OAuth helper
+  exists in `lib/auth.ts` but is not wired into the UI yet (provider not enabled)
 - **Map:** Leaflet + react-leaflet (dynamically imported — Leaflet requires browser APIs)
 - **Hosting:** Vercel
 
@@ -116,12 +117,14 @@ leaderboard, profile, Impresszum, URL state sync (`?focus=` uses the restaurant 
 DB migrations, RLS policies. Live data wiring: home page fetches `restaurant_stats`
 server-side (`src/lib/restaurants.ts`, falls back to static seed data + demo banner when
 the DB is unreachable), review submission inserts into `reviews`, detail modal fetches
-real reviews with reviewer names (needs the 004 FK). Google login via Supabase OAuth
-(`/auth/callback` route, `useUser` hook, login button in TopBar). Empty states everywhere
-for the zero-review launch.
+real reviews with reviewer names (needs the 004 FK). Email+password auth via `AuthModal`
+(`useUser` hook, login button in TopBar; handles both instant and confirm-email signup).
+Empty states everywhere for the zero-review launch.
 
 **TODO:**
 - Mobile responsive layout (< 720px) — friends will use this on phones
+- Wire Google OAuth login (helper + `/auth/callback` route exist; enable provider first)
 - Real photos via Supabase Storage (upload UI was removed from step 3 until wired)
 - Review likes (DB table + RLS exist, no UI)
-- Supabase project must be unpaused + migrations 001–004 run + Google provider enabled
+- Supabase project must be unpaused/recreated + migrations 001–004 run; for launch,
+  disable "Confirm email" (built-in mailer is rate-limited to a few emails/hour)

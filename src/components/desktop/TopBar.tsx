@@ -5,7 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import BrandMark from '@/components/ui/BrandMark';
 import Icon from '@/components/ui/Icon';
 import type { ActiveView } from '@/types';
-import { signInWithGoogle, signOut, displayName, initials } from '@/lib/auth';
+import { signOut, displayName, initials } from '@/lib/auth';
 
 interface TopBarProps {
   activeView: ActiveView;
@@ -13,6 +13,7 @@ interface TopBarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   user: User | null;
+  onLogin: () => void;
 }
 
 const NAV: { id: ActiveView; icon: string; label: string }[] = [
@@ -21,7 +22,7 @@ const NAV: { id: ActiveView; icon: string; label: string }[] = [
   { id: 'profile',     icon: 'user',   label: 'Profil' },
 ];
 
-export default function TopBar({ activeView, onViewChange, searchQuery, onSearchChange, user }: TopBarProps) {
+export default function TopBar({ activeView, onViewChange, searchQuery, onSearchChange, user, onLogin }: TopBarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -148,7 +149,7 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
         </div>
       ) : (
         <button
-          onClick={signInWithGoogle}
+          onClick={onLogin}
           className="bb-btn bb-btn-primary"
           style={{ flexShrink: 0, padding: '9px 18px', borderRadius: 999, fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 7 }}
         >

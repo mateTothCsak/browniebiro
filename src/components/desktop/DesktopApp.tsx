@@ -7,13 +7,12 @@ import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import type { Restaurant, ActiveView } from '@/types';
 import { useUser } from '@/hooks/useUser';
-import { signOut, displayName, initials } from '@/lib/auth';
+import { signInWithGoogle, signOut, displayName, initials } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/client';
 import TopBar from './TopBar';
 import RestaurantSidebar from './RestaurantSidebar';
 import RestaurantDetail from './RestaurantDetail';
 import SubmitReview from './SubmitReview';
-import AuthModal from './AuthModal';
 
 const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), { ssr: false });
 
@@ -36,7 +35,6 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
     return focusId ? (restaurants.find((r) => keyOf(r) === focusId) ?? null) : null;
   });
   const [showSubmitReview, setShowSubmitReview] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sync search query to URL
   useEffect(() => {
@@ -62,10 +60,10 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
     setShowSubmitReview(false);
   }, []);
 
-  // Not logged in → review CTA opens the login modal instead
+  // Not logged in → review CTA starts the Google login instead
   const handleStartReview = useCallback(() => {
     if (!user) {
-      setShowAuthModal(true);
+      signInWithGoogle();
       return;
     }
     setShowSubmitReview(true);
@@ -85,7 +83,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         user={user}
-        onLogin={() => setShowAuthModal(true)}
+        onLogin={signInWithGoogle}
       />
 
       {!live && (
@@ -154,7 +152,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
         )}
 
         {activeView === 'profile' && (
-          <ProfileView user={user} onLogin={() => setShowAuthModal(true)} />
+          <ProfileView user={user} onLogin={signInWithGoogle} />
         )}
       </div>
 
@@ -185,9 +183,6 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
           Impresszum
         </Link>
       </footer>
-
-      {/* Auth modal */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
 
       {/* Submit review */}
       {showSubmitReview && selectedRestaurant && (
@@ -318,7 +313,7 @@ function ProfileView({ user, onLogin }: { user: User | null; onLogin: () => void
           A belépés után tudsz brownie-kat értékelni, és itt látod a saját értékeléseidet.
         </div>
         <button onClick={onLogin} className="bb-btn bb-btn-primary" style={{ marginTop: 8 }}>
-          Belépés / Regisztráció
+          Belépés Google-fiókkal
         </button>
       </div>
     );

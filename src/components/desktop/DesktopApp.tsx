@@ -4,7 +4,11 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 import type { Restaurant, ActiveView } from '@/types';
+import { useUser } from '@/hooks/useUser';
+import { signInWithGoogle, signOut, displayName, initials } from '@/lib/auth';
+import { createClient } from '@/utils/supabase/client';
 import TopBar from './TopBar';
 import RestaurantSidebar from './RestaurantSidebar';
 import RestaurantDetail from './RestaurantDetail';
@@ -14,17 +18,21 @@ const LeafletMap = dynamic(() => import('@/components/map/LeafletMap'), { ssr: f
 
 interface DesktopAppProps {
   restaurants: Restaurant[];
+  live: boolean;
 }
 
-export default function DesktopApp({ restaurants }: DesktopAppProps) {
+const keyOf = (r: Restaurant) => r.slug ?? r.id;
+
+export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const user = useUser();
 
   const [activeView, setActiveView] = useState<ActiveView>('map');
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '');
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(() => {
     const focusId = searchParams.get('focus');
-    return focusId ? (restaurants.find((r) => r.id === focusId) ?? null) : null;
+    return focusId ? (restaurants.find((r) => keyOf(r) === focusId) ?? null) : null;
   });
   const [showSubmitReview, setShowSubmitReview] = useState(false);
 
@@ -32,7 +40,7 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
     if (searchQuery) params.set('q', searchQuery); else params.delete('q');
-    if (selectedRestaurant) params.set('focus', selectedRestaurant.id); else params.delete('focus');
+    if (selectedRestaurant) params.set('focus', keyOf(selectedRestaurant)); else params.delete('focus');
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [searchQuery, selectedRestaurant]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -40,7 +48,7 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
     const q = searchQuery.toLowerCase();
     return restaurants
       .filter((r) => !q || r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q))
-      .sort((a, b) => b.score - a.score || b.reviews - a.reviews);
+      .sort((a, b) => b.score - a.score || b.reviews - a.reviews || a.name.localeCompare(b.name, 'hu'));
   }, [restaurants, searchQuery]);
 
   const handleSelect = useCallback((r: Restaurant) => {
@@ -52,6 +60,21 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
     setShowSubmitReview(false);
   }, []);
 
+  // Not logged in → review CTA starts the Google login instead
+  const handleStartReview = useCallback(() => {
+    if (!user) {
+      signInWithGoogle();
+      return;
+    }
+    setShowSubmitReview(true);
+  }, [user]);
+
+  const handleReviewSuccess = useCallback(() => {
+    setShowSubmitReview(false);
+    setSelectedRestaurant(null);
+    router.refresh(); // re-fetch restaurant_stats so the new score shows up
+  }, [router]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <TopBar
@@ -59,7 +82,17 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
         onViewChange={setActiveView}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        user={user}
       />
+
+      {!live && (
+        <div style={{
+          background: 'var(--bb-amber)', color: 'var(--bb-cocoa)',
+          fontSize: 12, fontWeight: 600, textAlign: 'center', padding: '6px 12px', flexShrink: 0,
+        }}>
+          Demó adatok — az adatbázis jelenleg nem elérhető, az értékelések beküldése nem működik.
+        </div>
+      )}
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {activeView === 'map' && (
@@ -101,6 +134,7 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
                   { label: '4.4–4.6', color: 'var(--bb-brick)' },
                   { label: '4.0–4.3', color: 'var(--bb-amber)' },
                   { label: '< 4.0', color: 'var(--bb-pecan)' },
+                  { label: 'Nincs még értékelés', color: 'var(--bb-cocoa-2)' },
                 ].map((l) => (
                   <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--bb-cocoa-2)' }}>
                     <span style={{ width: 9, height: 9, borderRadius: 999, background: l.color, flexShrink: 0 }} />
@@ -113,11 +147,11 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
         )}
 
         {activeView === 'leaderboard' && (
-          <LeaderboardPlaceholder restaurants={restaurants} onSelect={handleSelect} />
+          <Leaderboard restaurants={restaurants} onSelect={handleSelect} />
         )}
 
         {activeView === 'profile' && (
-          <ProfilePlaceholder />
+          <ProfileView user={user} />
         )}
       </div>
 
@@ -125,8 +159,9 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
       {selectedRestaurant && !showSubmitReview && (
         <RestaurantDetail
           restaurant={selectedRestaurant}
+          live={live}
           onClose={handleClose}
-          onSubmitReview={() => setShowSubmitReview(true)}
+          onSubmitReview={handleStartReview}
         />
       )}
 
@@ -153,16 +188,31 @@ export default function DesktopApp({ restaurants }: DesktopAppProps) {
         <SubmitReview
           restaurant={selectedRestaurant}
           onClose={() => setShowSubmitReview(false)}
-          onSuccess={() => { setShowSubmitReview(false); setSelectedRestaurant(null); }}
+          onSuccess={handleReviewSuccess}
         />
       )}
     </div>
   );
 }
 
-function LeaderboardPlaceholder({ restaurants, onSelect }: { restaurants: Restaurant[]; onSelect: (r: Restaurant) => void }) {
-  const top10 = [...restaurants].sort((a, b) => b.score - a.score || b.reviews - a.reviews).slice(0, 10);
+function Leaderboard({ restaurants, onSelect }: { restaurants: Restaurant[]; onSelect: (r: Restaurant) => void }) {
+  const rated = restaurants.filter((r) => r.reviews > 0);
+  const top10 = [...rated].sort((a, b) => b.score - a.score || b.reviews - a.reviews).slice(0, 10);
   const [first, second, third, ...rest] = top10;
+
+  if (rated.length === 0) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: 'var(--bb-cream)', color: 'var(--bb-cocoa-2)', padding: 32 }}>
+        <div style={{ fontSize: 48 }}>🏆</div>
+        <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 22, fontWeight: 600, color: 'var(--bb-cocoa)' }}>
+          Még üres a toplista
+        </div>
+        <div style={{ fontSize: 14, textAlign: 'center', maxWidth: 380 }}>
+          Egyetlen brownie sincs még pontozva. Válassz egy helyszínt a térképen, és legyél te az első bíró! 🍫
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '32px 48px', background: 'var(--bb-cream)' }}>
@@ -233,35 +283,98 @@ function LeaderboardPlaceholder({ restaurants, onSelect }: { restaurants: Restau
   );
 }
 
-function ProfilePlaceholder() {
+function ProfileView({ user }: { user: User | null }) {
+  const [stats, setStats] = useState<{ reviews: number; places: number } | null>(null);
+
+  useEffect(() => {
+    if (!user) return; // stats aren't rendered while logged out
+    let cancelled = false;
+    const supabase = createClient();
+    supabase
+      .from('reviews')
+      .select('restaurant_id')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setStats({ reviews: data.length, places: new Set(data.map((d) => d.restaurant_id)).size });
+      });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'var(--bb-cream)', padding: 32 }}>
+        <div style={{ fontSize: 48 }}>🍫</div>
+        <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 22, fontWeight: 600, color: 'var(--bb-cocoa)' }}>
+          Lépj be a profilodhoz
+        </div>
+        <div style={{ fontSize: 14, color: 'var(--bb-cocoa-2)', textAlign: 'center', maxWidth: 340 }}>
+          A belépés után tudsz brownie-kat értékelni, és itt látod a saját értékeléseidet.
+        </div>
+        <button onClick={signInWithGoogle} className="bb-btn bb-btn-primary" style={{ marginTop: 8 }}>
+          Belépés Google-fiókkal
+        </button>
+      </div>
+    );
+  }
+
+  const name = displayName(user);
+  const memberSince = new Date(user.created_at).getFullYear();
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bb-cream)' }}>
       {/* Header band */}
       <div style={{ background: 'var(--bb-cocoa)', padding: '32px 48px', display: 'flex', alignItems: 'center', gap: 24 }}>
-        <div className="bb-avatar" style={{ width: 64, height: 64, fontSize: 22, background: 'var(--bb-amber)', color: 'var(--bb-cocoa)' }}>BD</div>
+        <div className="bb-avatar" style={{ width: 64, height: 64, fontSize: 22, background: 'var(--bb-amber)', color: 'var(--bb-cocoa)' }}>
+          {initials(name)}
+        </div>
         <div>
           <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 24, color: 'var(--bb-paper)', marginBottom: 4 }}>
-            Brownie Díjazó
+            {name}
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(255,250,240,0.65)' }}>Tag 2026 óta · Budapest</div>
+          <div style={{ fontSize: 13, color: 'rgba(255,250,240,0.65)' }}>Tag {memberSince} óta</div>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
-          {[{ label: '0', sub: 'értékelés' }, { label: '0', sub: 'helyszín' }, { label: '0', sub: 'kedvelés' }].map((s) => (
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          {[
+            { label: String(stats?.reviews ?? '–'), sub: 'értékelés' },
+            { label: String(stats?.places ?? '–'), sub: 'helyszín' },
+          ].map((s) => (
             <div key={s.sub} style={{ textAlign: 'center', background: 'rgba(255,250,240,0.10)', padding: '12px 20px', borderRadius: 14 }}>
               <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontWeight: 700, fontSize: 22, color: 'var(--bb-amber)' }}>{s.label}</div>
               <div style={{ fontSize: 11, color: 'rgba(255,250,240,0.65)' }}>{s.sub}</div>
             </div>
           ))}
+          <button
+            onClick={signOut}
+            style={{
+              background: 'transparent', border: '1px solid rgba(255,250,240,0.35)',
+              color: 'var(--bb-paper)', padding: '9px 16px', borderRadius: 999,
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Kijelentkezés
+          </button>
         </div>
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: 'var(--bb-cocoa-2)' }}>
-        <div style={{ fontSize: 48 }}>🍫</div>
-        <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--bb-cocoa)', fontWeight: 600 }}>Még nincs értékelésed</div>
-        <div style={{ fontSize: 14 }}>Látogass meg egy helyszínt és értékeld a brownie-t!</div>
+        {stats && stats.reviews > 0 ? (
+          <>
+            <div style={{ fontSize: 48 }}>🏅</div>
+            <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--bb-cocoa)', fontWeight: 600 }}>
+              Eddig {stats.reviews} értékelést adtál le {stats.places} helyszínen
+            </div>
+            <div style={{ fontSize: 14 }}>Így tovább, bíró! 🍫</div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 48 }}>🍫</div>
+            <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--bb-cocoa)', fontWeight: 600 }}>Még nincs értékelésed</div>
+            <div style={{ fontSize: 14 }}>Látogass meg egy helyszínt és értékeld a brownie-t!</div>
+          </>
+        )}
       </div>
     </div>
   );
 }
-

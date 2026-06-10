@@ -67,7 +67,8 @@ supabase/
   migrations/             # SQL files — run in order in Supabase SQL Editor
     001_schema.sql        # Tables, view, indexes, auto-profile trigger
     002_rls.sql           # Row Level Security policies
-    003_seed_restaurants.sql  # 22 Hungarian BK locations
+    003_seed_restaurants.sql  # 63 Hungarian BK locations
+    004_review_constraints.sql  # 1-review/day unique index + reviews→profiles FK
 ```
 
 ## Server vs Client components
@@ -104,17 +105,23 @@ View: `restaurant_stats` — use this for map pins and leaderboard, not raw `rev
 ## Conventions
 - Hungarian UI copy — all visible text is in Hungarian
 - Disclaimers: every page must show "Nem hivatalos rajongói oldal · független értékelések"
-- One review per user per restaurant per day (app-level rate limit — not yet implemented)
+- One review per user per restaurant per day (DB unique index in 004; app shows a friendly
+  message on error code 23505)
 - Photo uploads go to Supabase Storage, return a URL stored in `reviews.photo_url`
 - The `scoreClass()` helper in `lib/data.ts` converts a score to a CSS pin class
 
 ## What's done / what's next
 **Done:** Desktop layout, map + sidebar, restaurant detail modal, 3-step submit review UI,
-leaderboard, profile placeholder, Impresszum, URL state sync, DB migrations, RLS policies.
+leaderboard, profile, Impresszum, URL state sync (`?focus=` uses the restaurant slug),
+DB migrations, RLS policies. Live data wiring: home page fetches `restaurant_stats`
+server-side (`src/lib/restaurants.ts`, falls back to static seed data + demo banner when
+the DB is unreachable), review submission inserts into `reviews`, detail modal fetches
+real reviews with reviewer names (needs the 004 FK). Google login via Supabase OAuth
+(`/auth/callback` route, `useUser` hook, login button in TopBar). Empty states everywhere
+for the zero-review launch.
 
 **TODO:**
-- Wire submit review to Supabase (currently fires a fake 800ms delay)
-- Auth UI (sign up / log in modal)
-- Mobile responsive layout (< 720px)
-- Real photos via Supabase Storage
-- Supabase auth session handling (middleware is wired, UI is not)
+- Mobile responsive layout (< 720px) — friends will use this on phones
+- Real photos via Supabase Storage (upload UI was removed from step 3 until wired)
+- Review likes (DB table + RLS exist, no UI)
+- Supabase project must be unpaused + migrations 001–004 run + Google provider enabled

@@ -60,13 +60,16 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
       markersRef.current = [];
 
       restaurants.forEach((r) => {
-        const cls = scoreClass(r.score);
+        const cls = scoreClass(r.reviews > 0 ? r.score : 0);
         const isSelected = r.id === selectedId;
+        const label = r.reviews > 0
+          ? `<span style="font-size:9px">★</span>${r.score.toFixed(1)}`
+          : 'Új';
         const html = `
           <div class="map-pin-leaflet">
-            ${r.score >= 4.7 ? '<span class="pin-pulse"></span>' : ''}
+            ${r.reviews > 0 && r.score >= 4.7 ? '<span class="pin-pulse"></span>' : ''}
             <div class="pin-body ${cls}${isSelected ? ' selected' : ''}">
-              <span style="font-size:9px">★</span>${r.score.toFixed(1)}
+              ${label}
             </div>
           </div>`;
 

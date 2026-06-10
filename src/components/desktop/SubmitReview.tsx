@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { Restaurant } from '@/types';
 import { BROWNIE_TAGS } from '@/lib/data';
+import { createClient } from '@/utils/supabase/client';
 import Icon from '@/components/ui/Icon';
 import Stars from '@/components/ui/Stars';
 
@@ -72,6 +73,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
   const [tags, setTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const allRated = taste > 0 && texture > 0 && iceCream > 0;
   const avgScore = allRated ? ((taste + texture + iceCream) / 3) : 0;
@@ -86,11 +88,39 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    // TODO: POST to Supabase once wired up
-    await new Promise((r) => setTimeout(r, 800));
+    setError(null);
+
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setSubmitting(false);
+      setError('A beküldéshez be kell jelentkezned.');
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('reviews').insert({
+      restaurant_id: restaurant.id,
+      user_id: user.id,
+      taste,
+      texture,
+      ice_cream: iceCream,
+      body: body.trim(),
+      visit_date: visitDate,
+      tags,
+    });
+
     setSubmitting(false);
+    if (insertError) {
+      setError(
+        insertError.code === '23505'
+          ? 'Ma már értékelted ezt a helyszínt — gyere vissza holnap! 🍫'
+          : 'Nem sikerült beküldeni az értékelést. Próbáld újra később.',
+      );
+      return;
+    }
+
     setShowSuccess(true);
-    setTimeout(() => { setShowSuccess(false); onSuccess(); }, 2400);
+    setTimeout(() => { setShowSuccess(false); onSuccess(); }, 2000);
   };
 
   return (
@@ -249,20 +279,11 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
           {step === 3 && (
             <>
               <h3 style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 22, fontWeight: 600, margin: '0 0 4px', color: 'var(--bb-cocoa)' }}>
-                Adj hozzá egy fotót
+                Összegzés
               </h3>
               <p style={{ fontSize: 13, color: 'var(--bb-cocoa-2)', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Opcionális — de a fotós értékeléseket 3× annyian olvassák.
+                Nézd át az értékelésed, aztán küldd be.
               </p>
-
-              {/* Upload area */}
-              <div
-                className="bb-photo-ph"
-                style={{ height: 180, borderRadius: 18, marginBottom: 20, cursor: 'pointer', flexDirection: 'column', gap: 8 }}
-              >
-                <Icon name="camera" size={28} color="var(--bb-cocoa-2)" />
-                <span>Koppints a fotó hozzáadásához</span>
-              </div>
 
               {/* Summary card */}
               <div className="bb-card" style={{ padding: 16, marginBottom: 4 }}>
@@ -285,6 +306,13 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
             </>
           )}
         </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{ padding: '10px 18px 0', fontSize: 13, fontWeight: 600, color: 'var(--bb-brick)', textAlign: 'center', flexShrink: 0 }}>
+            {error}
+          </div>
+        )}
 
         {/* Footer actions */}
         <div style={{ padding: '12px 18px 20px', borderTop: '1px solid var(--bb-line)', display: 'flex', gap: 10, flexShrink: 0 }}>

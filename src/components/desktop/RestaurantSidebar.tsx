@@ -106,9 +106,15 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
           {r.name}
         </div>
         <div style={{ fontSize: 12, color: 'var(--bb-cocoa-2)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Stars value={r.score} />
-          <span>{r.score.toFixed(1)}</span>
-          <span>· {r.reviews} értékelés</span>
+          {r.reviews > 0 ? (
+            <>
+              <Stars value={r.score} />
+              <span>{r.score.toFixed(1)}</span>
+              <span>· {r.reviews} értékelés</span>
+            </>
+          ) : (
+            <span>Még nincs értékelés</span>
+          )}
         </div>
         {r.district && (
           <div style={{ fontSize: 11, color: 'var(--bb-cocoa-2)', marginTop: 2 }}>{r.district}</div>
@@ -117,7 +123,11 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
 
       {/* Score pill */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-        <span className="score-pill">{r.score.toFixed(1)}</span>
+        {r.reviews > 0 ? (
+          <span className="score-pill">{r.score.toFixed(1)}</span>
+        ) : (
+          <span className="bb-chip">Új</span>
+        )}
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
 'use client';
 
+import { useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import BrandMark from '@/components/ui/BrandMark';
 import Icon from '@/components/ui/Icon';
 import type { ActiveView } from '@/types';
+import { signInWithGoogle, signOut, displayName, initials } from '@/lib/auth';
 
 interface TopBarProps {
   activeView: ActiveView;
   onViewChange: (v: ActiveView) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  user: User | null;
 }
 
 const NAV: { id: ActiveView; icon: string; label: string }[] = [
@@ -17,7 +21,9 @@ const NAV: { id: ActiveView; icon: string; label: string }[] = [
   { id: 'profile',     icon: 'user',   label: 'Profil' },
 ];
 
-export default function TopBar({ activeView, onViewChange, searchQuery, onSearchChange }: TopBarProps) {
+export default function TopBar({ activeView, onViewChange, searchQuery, onSearchChange, user }: TopBarProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header style={{
       display: 'flex',
@@ -97,10 +103,59 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
         />
       </div>
 
-      {/* Avatar */}
-      <div className="bb-avatar" style={{ background: 'var(--bb-cocoa)', color: 'var(--bb-amber)', cursor: 'pointer' }}>
-        BD
-      </div>
+      {/* Auth */}
+      {user ? (
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Profil menü"
+            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+          >
+            <div className="bb-avatar" style={{ background: 'var(--bb-cocoa)', color: 'var(--bb-amber)' }}>
+              {initials(displayName(user))}
+            </div>
+          </button>
+
+          {menuOpen && (
+            <div style={{
+              position: 'absolute', right: 0, top: 'calc(100% + 10px)',
+              background: 'var(--bb-paper)',
+              border: '1px solid var(--bb-line)',
+              borderRadius: 14,
+              boxShadow: 'var(--bb-shadow-lg)',
+              padding: 8,
+              minWidth: 200,
+              zIndex: 30,
+            }}>
+              <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--bb-line)', marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--bb-cocoa)' }}>{displayName(user)}</div>
+                <div style={{ fontSize: 11, color: 'var(--bb-cocoa-2)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
+              </div>
+              <button
+                onClick={() => { setMenuOpen(false); signOut(); }}
+                style={{
+                  width: '100%', textAlign: 'left',
+                  background: 'transparent', border: 'none',
+                  padding: '8px 10px', borderRadius: 10,
+                  fontSize: 13, fontWeight: 600, color: 'var(--bb-brick)',
+                  cursor: 'pointer',
+                }}
+              >
+                Kijelentkezés
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={signInWithGoogle}
+          className="bb-btn bb-btn-primary"
+          style={{ flexShrink: 0, padding: '9px 18px', borderRadius: 999, fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 7 }}
+        >
+          <Icon name="user" size={14} color="currentColor" />
+          Belépés
+        </button>
+      )}
     </header>
   );
 }

@@ -1,11 +1,15 @@
 import { Suspense } from 'react';
 import DesktopApp from '@/components/desktop/DesktopApp';
-import { HU_RESTAURANTS } from '@/lib/data';
+import { getRestaurants } from '@/lib/restaurants';
 
-export default function Page() {
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  const { restaurants, live } = await getRestaurants();
+
   return (
     <Suspense>
-      <DesktopApp restaurants={HU_RESTAURANTS} />
+      <DesktopApp restaurants={restaurants} live={live} />
     </Suspense>
   );
 }

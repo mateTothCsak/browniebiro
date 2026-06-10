@@ -200,6 +200,7 @@ button { font-family: inherit; cursor: pointer; }
   border: 2px solid var(--bb-paper);
   white-space: nowrap;
 }
+.pin-body.score-none { background: var(--bb-cocoa-2); }
 .pin-body.score-low  { background: var(--bb-pecan); }
 .pin-body.score-mid  { background: var(--bb-amber); color: var(--bb-cocoa); }
 .pin-body.score-high { background: var(--bb-brick); }

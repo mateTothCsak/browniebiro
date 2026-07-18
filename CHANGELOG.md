@@ -2,6 +2,22 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Photos, likes, mobile
+
+### Added
+- **Review photo uploads** — optional photo in SubmitReview step 3 (preview + remove),
+  uploaded to the new `review-photos` Storage bucket (public read; users write/delete only
+  in their own `{uid}/` folder), URL stored in `reviews.photo_url` and shown in the
+  detail review list. Migration 006 creates the bucket + storage policies.
+- **Review likes** — heart button + count on each review in the detail view; optimistic
+  toggle backed by `review_likes` (RLS already existed, no DB change).
+- **Mobile layout** (≤760px) via a `useIsMobile` hook: TopBar stacks into brand+auth /
+  search / segmented-nav rows; the map view puts the map on top with the list scrolling
+  below; leaderboard/profile paddings and the podium adapt so nothing overflows.
+
+### Changed
+- New, slightly simpler brownie artwork (`public/brownie.png`).
+
 ## 2026-07-19 — First deploy + launch-polish pass
 
 **Shipped to production (Vercel).** First public deploy of the site.

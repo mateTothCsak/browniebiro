@@ -3,12 +3,11 @@
 Open and planned work, roughly in priority order. Shipped items move to `CHANGELOG.md`.
 
 ## Next up
-- **Photo uploads for reviews** — let a user attach a photo of their brownie and show it
-  to others. Needs: a Supabase Storage bucket (`review-photos`) with RLS/storage policies,
-  upload UI in SubmitReview step 3 (currently stubbed out), store the URL in
-  `reviews.photo_url`, and render photos in the RestaurantDetail review list.
+- **Mascot / logo** — the `BrandMark` header logo is a low-contrast blob. Plan: a
+  brownie-judge ("bíró") cartoon mascot (generic, no BK trade dress) for the logo,
+  favicon, and empty states; use the brownie image as a stopgap logo meanwhile.
 
 ## Backlog
-- **Mobile responsive layout** (< 720px) — friends will mostly use phones; the sidebar,
-  top nav and map all break at phone width today.
-- **Review likes** — DB table + RLS already exist; no UI yet.
+- **Map pin legibility** — the detailed brownie muddies at ~36px when pins cluster;
+  consider a bolder, simpler pin (teardrop silhouette or a flat 3-color brownie).
+- Address the `middleware.ts` → `proxy.ts` deprecation (Next 16 rename).

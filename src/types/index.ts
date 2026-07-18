@@ -23,6 +23,7 @@ export interface Review {
   body: string;
   tags: string[];
   likes: number;
+  liked?: boolean;
   hasPhoto?: boolean;
   photo_url?: string | null;
 }

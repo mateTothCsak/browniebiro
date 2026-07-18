@@ -10,17 +10,20 @@ interface RestaurantSidebarProps {
   selectedId: string | null;
   onSelect: (r: Restaurant) => void;
   totalCount: number;
+  isMobile?: boolean;
 }
 
-export default function RestaurantSidebar({ restaurants, selectedId, onSelect, totalCount }: RestaurantSidebarProps) {
+export default function RestaurantSidebar({ restaurants, selectedId, onSelect, totalCount, isMobile = false }: RestaurantSidebarProps) {
   return (
     <aside style={{
-      width: 380,
-      flexShrink: 0,
+      width: isMobile ? '100%' : 380,
+      flex: isMobile ? 1 : 'none',
+      flexShrink: isMobile ? 1 : 0,
+      minHeight: 0,
       display: 'flex',
       flexDirection: 'column',
       background: 'var(--bb-paper)',
-      borderRight: '1px solid var(--bb-line)',
+      borderRight: isMobile ? 'none' : '1px solid var(--bb-line)',
       overflow: 'hidden',
     }}>
       {/* Header */}

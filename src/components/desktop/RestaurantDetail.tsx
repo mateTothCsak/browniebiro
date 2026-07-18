@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
 import BrowniePinIcon from '@/components/ui/BrowniePinIcon';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
-import { initials } from '@/lib/auth';
+import { initials, signInWithGoogle } from '@/lib/auth';
 
 interface RestaurantDetailProps {
   restaurant: Restaurant;
   live: boolean;
+  user: User | null;
   onClose: () => void;
   onSubmitReview: () => void;
 }
@@ -22,10 +24,11 @@ interface ReviewRow {
   visit_date: string;
   tags: string[] | null;
   photo_url: string | null;
+  review_likes: { count: number }[] | null;
   profiles: { display_name: string | null } | null;
 }
 
-export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmitReview }: RestaurantDetailProps) {
+export default function RestaurantDetail({ restaurant: r, live, user, onClose, onSubmitReview }: RestaurantDetailProps) {
   // null = loading
   const [reviews, setReviews] = useState<Review[] | null>(live ? null : []);
 
@@ -33,32 +36,64 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
     if (!live) return;
     let cancelled = false;
     const supabase = createClient();
-    supabase
-      .from('reviews')
-      .select('id, avg_score, body, visit_date, tags, photo_url, profiles(display_name)')
-      .eq('restaurant_id', r.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data, error }) => {
+    (async () => {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, avg_score, body, visit_date, tags, photo_url, review_likes(count), profiles(display_name)')
+        .eq('restaurant_id', r.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (cancelled) return;
+      if (error || !data) { setReviews([]); return; }
+      const rows = data as unknown as ReviewRow[];
+
+      // Which of these reviews has the current user already liked?
+      let likedSet = new Set<string>();
+      if (user && rows.length) {
+        const { data: mine } = await supabase
+          .from('review_likes')
+          .select('review_id')
+          .eq('user_id', user.id)
+          .in('review_id', rows.map((row) => row.id));
         if (cancelled) return;
-        if (error || !data) { setReviews([]); return; }
-        setReviews((data as unknown as ReviewRow[]).map((row) => {
-          const author = row.profiles?.display_name ?? 'Vendég';
-          return {
-            id: row.id,
-            author,
-            avatar: initials(author),
-            score: Math.round(Number(row.avg_score)),
-            date: row.visit_date,
-            body: row.body,
-            tags: row.tags ?? [],
-            likes: 0,
-            photo_url: row.photo_url,
-          };
-        }));
-      });
+        likedSet = new Set((mine ?? []).map((m) => m.review_id as string));
+      }
+
+      setReviews(rows.map((row) => {
+        const author = row.profiles?.display_name ?? 'Vendég';
+        return {
+          id: row.id,
+          author,
+          avatar: initials(author),
+          score: Math.round(Number(row.avg_score)),
+          date: row.visit_date,
+          body: row.body,
+          tags: row.tags ?? [],
+          likes: row.review_likes?.[0]?.count ?? 0,
+          liked: likedSet.has(row.id),
+          photo_url: row.photo_url,
+        };
+      }));
+    })();
     return () => { cancelled = true; };
-  }, [r.id, live]);
+  }, [r.id, live, user]);
+
+  const toggleLike = async (rev: Review) => {
+    if (!user) { signInWithGoogle(); return; }
+    const nowLiked = !rev.liked;
+    // optimistic update
+    setReviews((prev) => prev?.map((x) =>
+      x.id === rev.id ? { ...x, liked: nowLiked, likes: x.likes + (nowLiked ? 1 : -1) } : x) ?? prev);
+    const supabase = createClient();
+    const { error } = nowLiked
+      ? await supabase.from('review_likes').insert({ review_id: rev.id, user_id: user.id })
+      : await supabase.from('review_likes').delete().eq('review_id', rev.id).eq('user_id', user.id);
+    if (error) {
+      // revert on failure
+      setReviews((prev) => prev?.map((x) =>
+        x.id === rev.id ? { ...x, liked: rev.liked, likes: rev.likes } : x) ?? prev);
+    }
+  };
 
   const distribution = [5, 4, 3, 2, 1].map((n) => ({
     n,
@@ -266,13 +301,38 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
 
                   <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
 
+                  {rev.photo_url && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={rev.photo_url}
+                      alt="Brownie fotó"
+                      style={{ width: '100%', maxHeight: 260, objectFit: 'cover', borderRadius: 12, marginBottom: 8, display: 'block' }}
+                    />
+                  )}
+
                   {rev.tags.length > 0 && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
                       {rev.tags.map((t) => (
                         <span key={t} className="bb-chip" style={{ fontSize: 10, padding: '3px 8px' }}>#{t}</span>
                       ))}
                     </div>
                   )}
+
+                  {/* Like */}
+                  <button
+                    onClick={() => toggleLike(rev)}
+                    aria-pressed={rev.liked}
+                    aria-label={rev.liked ? 'Kedvelés visszavonása' : 'Kedvelem'}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      background: 'transparent', border: 'none', padding: '2px 0', cursor: 'pointer',
+                      color: rev.liked ? 'var(--bb-brick)' : 'var(--bb-cocoa-2)',
+                      fontWeight: 700, fontSize: 12,
+                    }}
+                  >
+                    <Icon name="heart" size={15} color={rev.liked ? 'var(--bb-brick)' : 'var(--bb-cocoa-2)'} />
+                    {rev.likes > 0 ? rev.likes : 'Tetszik'}
+                  </button>
                 </div>
               ))}
             </div>

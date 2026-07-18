@@ -7,6 +7,7 @@ import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import type { Restaurant, ActiveView } from '@/types';
 import { useUser } from '@/hooks/useUser';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { signInWithGoogle, signOut, displayName, initials } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/client';
 import TopBar from './TopBar';
@@ -27,6 +28,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const user = useUser();
+  const isMobile = useIsMobile();
 
   const [activeView, setActiveView] = useState<ActiveView>('map');
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') ?? '');
@@ -79,7 +81,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
   }, [router]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <TopBar
         activeView={activeView}
         onViewChange={setActiveView}
@@ -87,6 +89,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
         onSearchChange={setSearchQuery}
         user={user}
         onLogin={signInWithGoogle}
+        isMobile={isMobile}
       />
 
       {!live && (
@@ -98,8 +101,26 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
         </div>
       )}
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {activeView === 'map' && (
+      <div style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', overflow: 'hidden' }}>
+        {activeView === 'map' && (isMobile ? (
+          <>
+            {/* Mobile: map on top, list scrolls below */}
+            <div style={{ height: '42vh', position: 'relative', flexShrink: 0, overflow: 'hidden', isolation: 'isolate' }}>
+              <LeafletMap
+                restaurants={filtered}
+                selectedId={selectedRestaurant?.id ?? null}
+                onSelect={handleSelect}
+              />
+            </div>
+            <RestaurantSidebar
+              restaurants={filtered}
+              selectedId={selectedRestaurant?.id ?? null}
+              onSelect={handleSelect}
+              totalCount={restaurants.length}
+              isMobile
+            />
+          </>
+        ) : (
           <>
             <RestaurantSidebar
               restaurants={filtered}
@@ -147,14 +168,14 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
               </div>
             </div>
           </>
-        )}
+        ))}
 
         {activeView === 'leaderboard' && (
-          <Leaderboard restaurants={restaurants} onSelect={handleSelect} />
+          <Leaderboard restaurants={restaurants} onSelect={handleSelect} isMobile={isMobile} />
         )}
 
         {activeView === 'profile' && (
-          <ProfileView user={user} onLogin={signInWithGoogle} />
+          <ProfileView user={user} onLogin={signInWithGoogle} isMobile={isMobile} />
         )}
       </div>
 
@@ -163,6 +184,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
         <RestaurantDetail
           restaurant={selectedRestaurant}
           live={live}
+          user={user}
           onClose={handleClose}
           onSubmitReview={handleStartReview}
         />
@@ -170,18 +192,21 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
 
       {/* Footer */}
       <footer style={{
-        padding: '8px 28px',
+        padding: isMobile ? '6px 14px' : '8px 28px',
         background: 'var(--bb-paper)',
         borderTop: '1px solid var(--bb-line)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        fontSize: 11,
+        gap: 10,
+        fontSize: isMobile ? 10 : 11,
         color: 'var(--bb-cocoa-2)',
         flexShrink: 0,
       }}>
-        <span>Nem hivatalos rajongói oldal · független értékelések</span>
-        <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600 }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {isMobile ? 'Nem hivatalos rajongói oldal' : 'Nem hivatalos rajongói oldal · független értékelések'}
+        </span>
+        <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>
           Impresszum
         </Link>
       </footer>
@@ -198,7 +223,7 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
   );
 }
 
-function Leaderboard({ restaurants, onSelect }: { restaurants: Restaurant[]; onSelect: (r: Restaurant) => void }) {
+function Leaderboard({ restaurants, onSelect, isMobile }: { restaurants: Restaurant[]; onSelect: (r: Restaurant) => void; isMobile: boolean }) {
   const rated = restaurants.filter((r) => r.reviews > 0);
   const top10 = [...rated].sort((a, b) => b.score - a.score || b.reviews - a.reviews).slice(0, 10);
   const [first, second, third, ...rest] = top10;
@@ -218,13 +243,13 @@ function Leaderboard({ restaurants, onSelect }: { restaurants: Restaurant[]; onS
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '32px 48px', background: 'var(--bb-cream)' }}>
-      <h2 style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 32, color: 'var(--bb-cocoa)', margin: '0 0 28px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 14px' : '32px 48px', background: 'var(--bb-cream)' }}>
+      <h2 style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontWeight: 600, fontSize: isMobile ? 24 : 32, color: 'var(--bb-cocoa)', margin: '0 0 24px' }}>
         Toplista
       </h2>
 
       {/* Podium */}
-      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', marginBottom: 24, justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: isMobile ? 8 : 16, alignItems: 'flex-end', marginBottom: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
         {[second, first, third].map((r, idx) => {
           const place = idx === 0 ? 2 : idx === 1 ? 1 : 3;
           const isFirst = place === 1;
@@ -245,7 +270,7 @@ function Leaderboard({ restaurants, onSelect }: { restaurants: Restaurant[]; onS
                 cursor: 'pointer',
                 transform: isFirst ? 'translateY(-12px)' : 'none',
                 boxShadow: isFirst ? 'var(--bb-shadow-lg)' : 'var(--bb-shadow)',
-                minWidth: 140,
+                minWidth: isMobile ? 92 : 140,
                 textAlign: 'center',
               }}
             >
@@ -286,7 +311,7 @@ function Leaderboard({ restaurants, onSelect }: { restaurants: Restaurant[]; onS
   );
 }
 
-function ProfileView({ user, onLogin }: { user: User | null; onLogin: () => void }) {
+function ProfileView({ user, onLogin, isMobile }: { user: User | null; onLogin: () => void; isMobile: boolean }) {
   const [stats, setStats] = useState<{ reviews: number; places: number } | null>(null);
 
   useEffect(() => {
@@ -327,8 +352,8 @@ function ProfileView({ user, onLogin }: { user: User | null; onLogin: () => void
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bb-cream)' }}>
       {/* Header band */}
-      <div style={{ background: 'var(--bb-cocoa)', padding: '32px 48px', display: 'flex', alignItems: 'center', gap: 24 }}>
-        <div className="bb-avatar" style={{ width: 64, height: 64, fontSize: 22, background: 'var(--bb-amber)', color: 'var(--bb-cocoa)' }}>
+      <div style={{ background: 'var(--bb-cocoa)', padding: isMobile ? '20px 16px' : '32px 48px', display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: 'wrap' }}>
+        <div className="bb-avatar" style={{ width: 64, height: 64, fontSize: 22, background: 'var(--bb-amber)', color: 'var(--bb-cocoa)', flexShrink: 0 }}>
           {initials(name)}
         </div>
         <div>
@@ -337,7 +362,7 @@ function ProfileView({ user, onLogin }: { user: User | null; onLogin: () => void
           </div>
           <div style={{ fontSize: 13, color: 'rgba(255,250,240,0.65)' }}>Tag {memberSince} óta</div>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ marginLeft: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           {[
             { label: String(stats?.reviews ?? '–'), sub: 'értékelés' },
             { label: String(stats?.places ?? '–'), sub: 'helyszín' },
@@ -361,7 +386,7 @@ function ProfileView({ user, onLogin }: { user: User | null; onLogin: () => void
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, padding: '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: 'var(--bb-cocoa-2)' }}>
+      <div style={{ flex: 1, padding: isMobile ? '28px 16px' : '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: 'var(--bb-cocoa-2)', textAlign: 'center' }}>
         {stats && stats.reviews > 0 ? (
           <>
             <div style={{ fontSize: 48 }}>🏅</div>

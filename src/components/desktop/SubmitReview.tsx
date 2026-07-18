@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import type { Restaurant } from '@/types';
 import { BROWNIE_TAGS } from '@/lib/data';
 import { createClient } from '@/utils/supabase/client';
@@ -74,6 +74,8 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const allRated = taste > 0 && texture > 0 && iceCream > 0;
   const avgScore = allRated ? ((taste + texture + iceCream) / 3) : 0;
@@ -85,6 +87,28 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Revoke the preview object URL when it changes / unmounts
+  useEffect(() => {
+    return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
+  }, [photoPreview]);
+
+  const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { setError('A kép legfeljebb 5 MB lehet.'); return; }
+    setError(null);
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(f);
+    setPhotoPreview(URL.createObjectURL(f));
+  };
+
+  const clearPhoto = () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -98,6 +122,22 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
       return;
     }
 
+    // Upload the photo first (if any) so we can store its URL on the review
+    let photo_url: string | null = null;
+    if (photoFile) {
+      const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('review-photos')
+        .upload(path, photoFile, { contentType: photoFile.type, upsert: false });
+      if (upErr) {
+        setSubmitting(false);
+        setError('A fotó feltöltése nem sikerült. Próbáld újra, vagy küldd be fotó nélkül.');
+        return;
+      }
+      photo_url = supabase.storage.from('review-photos').getPublicUrl(path).data.publicUrl;
+    }
+
     const { error: insertError } = await supabase.from('reviews').insert({
       restaurant_id: restaurant.id,
       user_id: user.id,
@@ -107,6 +147,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
       body: body.trim(),
       visit_date: visitDate,
       tags,
+      photo_url,
     });
 
     setSubmitting(false);
@@ -300,6 +341,48 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {tags.map((t) => <span key={t} className="bb-chip" style={{ fontSize: 11 }}>#{t}</span>)}
                   </div>
+                )}
+              </div>
+
+              {/* Photo (optional) */}
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-cocoa-2)', marginBottom: 8 }}>
+                  Fotó a brownie-ról (opcionális)
+                </div>
+                {photoPreview ? (
+                  <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--bb-line)' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photoPreview} alt="Előnézet" style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }} />
+                    <button
+                      onClick={clearPhoto}
+                      aria-label="Fotó eltávolítása"
+                      style={{
+                        position: 'absolute', top: 8, right: 8,
+                        width: 30, height: 30, borderRadius: '50%',
+                        background: 'rgba(26,20,16,0.6)', color: 'var(--bb-paper)',
+                        border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <Icon name="x" size={16} color="currentColor" />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="review-photo"
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '22px 16px', borderRadius: 14,
+                      border: '1.5px dashed var(--bb-line-strong)',
+                      background: 'var(--bb-paper)', color: 'var(--bb-cocoa-2)',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'center',
+                    }}
+                  >
+                    <Icon name="camera" size={22} color="var(--bb-cocoa-2)" />
+                    Fotó hozzáadása
+                    <span style={{ fontSize: 11, fontWeight: 500 }}>JPG, PNG vagy WEBP · max 5 MB</span>
+                    <input id="review-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} style={{ display: 'none' }} />
+                  </label>
                 )}
               </div>
             </>

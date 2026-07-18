@@ -108,8 +108,10 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
               totalCount={restaurants.length}
             />
 
-            {/* Map area */}
-            <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            {/* Map area — `isolation: isolate` traps Leaflet's high internal
+                z-indexes in their own stacking context, so map layers can't
+                paint over the modal/backdrop overlays (which sit above it). */}
+            <div style={{ flex: 1, position: 'relative', overflow: 'hidden', isolation: 'isolate' }}>
               <LeafletMap
                 restaurants={filtered}
                 selectedId={selectedRestaurant?.id ?? null}
@@ -131,20 +133,17 @@ export default function DesktopApp({ restaurants, live }: DesktopAppProps) {
                 fontSize: 11,
               }}>
                 <div style={{ fontWeight: 700, color: 'var(--bb-cocoa)', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
-                  Pontszám
+                  Jelmagyarázat
                 </div>
-                {[
-                  { label: '4.7+', color: 'var(--bb-leaf-deep)' },
-                  { label: '4.4–4.6', color: 'var(--bb-brick)' },
-                  { label: '4.0–4.3', color: 'var(--bb-amber)' },
-                  { label: '< 4.0', color: 'var(--bb-pecan)' },
-                  { label: 'Nincs még értékelés', color: 'var(--bb-cocoa-2)' },
-                ].map((l) => (
-                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--bb-cocoa-2)' }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 999, background: l.color, flexShrink: 0 }} />
-                    {l.label}
-                  </div>
-                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--bb-cocoa-2)' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/brownie.png" width={16} height={16} alt="" style={{ flexShrink: 0 }} />
+                  Brownie-helyszín
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--bb-cocoa-2)' }}>
+                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--bb-brick)', border: '1.5px solid var(--bb-paper)', flexShrink: 0 }} />
+                  Már van értékelés
+                </div>
               </div>
             </div>
           </>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
+import BrowniePinIcon from '@/components/ui/BrowniePinIcon';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 import { initials } from '@/lib/auth';
@@ -78,26 +79,23 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
   }, [onClose]);
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0,
-          background: 'rgba(26,20,16,0.45)',
-          backdropFilter: 'blur(2px)',
-          zIndex: 40,
-          animation: 'bb-fade 200ms ease both',
-        }}
-      />
-
-      {/* Modal */}
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 40,
+        background: 'rgba(26,20,16,0.45)',
+        backdropFilter: 'blur(2px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16,
+        animation: 'bb-fade 200ms ease both',
+      }}
+    >
+      {/* Modal — flex-centered by the overlay above; no positioning transform,
+          so the bb-rise animation's transform doesn't clobber the centering. */}
       <div
         className="bb-rise"
+        onClick={(e) => e.stopPropagation()}
         style={{
-          position: 'fixed',
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
           width: '100%',
           maxWidth: 480,
           maxHeight: '90vh',
@@ -106,7 +104,6 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          zIndex: 50,
           boxShadow: 'var(--bb-shadow-lg)',
         }}
       >
@@ -128,9 +125,14 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
 
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' }}>
-          {/* Hero */}
-          <div className="bb-photo-ph" style={{ height: 160, marginBottom: 14, borderRadius: 18 }}>
-            {r.name} · brownie photo
+          {/* Hero — brownie illustration banner (becomes the AI brownie image later) */}
+          <div style={{
+            height: 160, marginBottom: 14, borderRadius: 18,
+            background: 'linear-gradient(135deg, var(--bb-cocoa), var(--bb-pecan))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+          }}>
+            <BrowniePinIcon size={78} />
           </div>
 
           {/* Tag chips */}
@@ -277,6 +279,6 @@ export default function RestaurantDetail({ restaurant: r, live, onClose, onSubmi
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

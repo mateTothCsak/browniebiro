@@ -111,21 +111,19 @@ View: `restaurant_stats` — use this for map pins and leaderboard, not raw `rev
 - Photo uploads go to Supabase Storage, return a URL stored in `reviews.photo_url`
 - The `scoreClass()` helper in `lib/data.ts` converts a score to a CSS pin class
 
-## What's done / what's next
-**Done:** Desktop layout, map + sidebar, restaurant detail modal, 3-step submit review UI,
-leaderboard, profile, Impresszum, URL state sync (`?focus=` uses the restaurant slug),
-DB migrations, RLS policies. Live data wiring: home page fetches `restaurant_stats`
-server-side (`src/lib/restaurants.ts`, falls back to static seed data + demo banner when
-the DB is unreachable), review submission inserts into `reviews`, detail modal fetches
-real reviews with reviewer names (needs the 004 FK). Google-only login (`useUser` hook,
-login button in TopBar). Empty states everywhere for the zero-review launch.
+## Data flow (durable)
+- Home page fetches `restaurant_stats` server-side (`src/lib/restaurants.ts`) and falls
+  back to static seed data + a demo banner when the DB is unreachable.
+- Review submission inserts into `reviews`; the detail modal fetches real reviews with
+  reviewer names via the `reviews → profiles` FK (migration 004).
+- Auth is Google-only (`useUser` hook, login in TopBar).
+- The brownie mark (`public/brownie.png`) is shared via `components/ui/BrowniePinIcon`
+  for sidebar tiles and the detail hero; the Leaflet map uses a plain `<img>` in its
+  divIcon HTML (raw string, not React).
 
-Live Supabase project `fpbuaxctqxlxjvqyrihe`: migrations 001–005 applied (2026-06-10),
-63 restaurants seeded, security hardening done (invoker view, locked trigger fn).
+Live Supabase project ref: `fpbuaxctqxlxjvqyrihe`.
 
-**TODO:**
-- Enable the Google provider in Supabase (Google Cloud OAuth client; redirect URI is
-  `https://fpbuaxctqxlxjvqyrihe.supabase.co/auth/v1/callback`) — login fails until then
-- Mobile responsive layout (< 720px) — friends will use this on phones
-- Real photos via Supabase Storage (upload UI was removed from step 3 until wired)
-- Review likes (DB table + RLS exist, no UI)
+## Project history & roadmap — NOT here
+Shipped history lives in `CHANGELOG.md` (and git). Planned/open work lives in
+`ROADMAP.md`. Keep this file to durable architecture & conventions — don't log dated
+status or "what's done" here (it goes stale).

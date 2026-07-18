@@ -176,35 +176,28 @@ button { font-family: inherit; cursor: pointer; }
 
 /* ── Map pins ─────────────────────────────────────────── */
 .bb-leaflet-icon { background: transparent !important; border: none !important; }
-.map-pin-leaflet { position: relative; transform: translateY(-4px); }
-.map-pin-leaflet .pin-pulse {
+.bb-pin {
+  position: relative;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+  filter: drop-shadow(0 2px 2px rgba(58,36,26,0.4));
+  transform-origin: 50% 90%;
+}
+.bb-pin img { display: block; width: 36px; height: 36px; }
+.bb-pin:hover { transform: scale(1.14); }
+.bb-pin.selected {
+  transform: scale(1.42);
+  filter: drop-shadow(0 3px 5px rgba(58,36,26,0.55));
+  z-index: 1000;
+}
+.bb-pin-dot {
   position: absolute;
-  left: 50%; top: 60%;
-  transform: translate(-50%, -50%);
-  width: 18px; height: 18px;
+  top: -2px; right: -2px;
+  width: 11px; height: 11px;
   border-radius: 50%;
-  animation: bb-pulse-ring 1.6s ease-out infinite;
-  pointer-events: none;
-}
-.pin-body {
   background: var(--bb-brick);
-  color: var(--bb-paper);
-  border-radius: 999px 999px 999px 4px;
-  padding: 4px 9px;
-  font-size: 11px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  box-shadow: 0 2px 6px rgba(58,36,26,0.25);
   border: 2px solid var(--bb-paper);
-  white-space: nowrap;
 }
-.pin-body.score-none { background: var(--bb-cocoa-2); }
-.pin-body.score-low  { background: var(--bb-pecan); }
-.pin-body.score-mid  { background: var(--bb-amber); color: var(--bb-cocoa); }
-.pin-body.score-high { background: var(--bb-brick); }
-.pin-body.score-best { background: var(--bb-leaf-deep); }
 
 /* Leaflet controls */
 .leaflet-container { font-family: var(--font-figtree, sans-serif); }

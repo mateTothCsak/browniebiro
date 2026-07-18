@@ -125,30 +125,29 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Overlay flex-centers the modal (no positioning transform, so the
+          bb-rise animation's transform doesn't clobber the centering). */}
       <div
         onClick={onClose}
         style={{
-          position: 'fixed', inset: 0,
+          position: 'fixed', inset: 0, zIndex: 40,
           background: 'rgba(26,20,16,0.45)',
           backdropFilter: 'blur(2px)',
-          zIndex: 40,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 16,
           animation: 'bb-fade 200ms ease both',
         }}
-      />
-
+      >
       {/* Modal */}
       <div
         className="bb-rise"
+        onClick={(e) => e.stopPropagation()}
         style={{
-          position: 'fixed', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
           width: '100%', maxWidth: 480, maxHeight: '92vh',
           background: 'var(--bb-cream)',
           borderRadius: 'var(--bb-radius-xl)',
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          zIndex: 50,
           boxShadow: 'var(--bb-shadow-lg)',
         }}
       >
@@ -343,20 +342,25 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
           )}
         </div>
       </div>
+      </div>
 
-      {/* Toast */}
+      {/* Toast — outer div does the horizontal centering via flex so the
+          inner pill's bb-rise transform doesn't fight a translateX. */}
       {showSuccess && (
         <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--bb-cocoa)', color: 'var(--bb-paper)',
-          padding: '12px 24px', borderRadius: 999,
-          fontWeight: 600, fontSize: 14,
-          boxShadow: 'var(--bb-shadow-lg)',
-          zIndex: 60,
-          animation: 'bb-rise 320ms cubic-bezier(.2,.8,.2,1) both',
-          whiteSpace: 'nowrap',
+          position: 'fixed', bottom: 32, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center',
+          zIndex: 60, pointerEvents: 'none',
         }}>
-          Köszönjük az értékelést! 🍫
+          <div className="bb-rise" style={{
+            background: 'var(--bb-cocoa)', color: 'var(--bb-paper)',
+            padding: '12px 24px', borderRadius: 999,
+            fontWeight: 600, fontSize: 14,
+            boxShadow: 'var(--bb-shadow-lg)',
+            whiteSpace: 'nowrap',
+          }}>
+            Köszönjük az értékelést! 🍫
+          </div>
         </div>
       )}
     </>

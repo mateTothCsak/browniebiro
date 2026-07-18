@@ -2,6 +2,7 @@
 
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
+import BrowniePinIcon from '@/components/ui/BrowniePinIcon';
 import type { Restaurant } from '@/types';
 
 interface RestaurantSidebarProps {
@@ -78,7 +79,7 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
       onClick={() => onSelect(r)}
       style={{
         display: 'grid',
-        gridTemplateColumns: '56px 1fr auto',
+        gridTemplateColumns: '52px 1fr',
         gap: 12,
         alignItems: 'center',
         padding: '10px 12px',
@@ -95,9 +96,20 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
         if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--bb-cream)';
       }}
     >
-      {/* Thumbnail placeholder */}
-      <div className="bb-photo-ph" style={{ width: 56, height: 56, fontSize: 8, borderRadius: 10, flexShrink: 0 }}>
-        foto
+      {/* Score / brownie tile — average score once rated, brownie icon until then */}
+      <div style={{
+        width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: r.reviews > 0 ? 'var(--bb-cocoa)' : 'var(--bb-cream-2)',
+        border: '1px solid var(--bb-line)',
+      }}>
+        {r.reviews > 0 ? (
+          <span style={{ fontFamily: 'var(--font-fraunces, serif)', fontWeight: 700, fontSize: 19, color: 'var(--bb-amber)' }}>
+            {r.score.toFixed(1)}
+          </span>
+        ) : (
+          <BrowniePinIcon size={26} />
+        )}
       </div>
 
       {/* Info */}
@@ -109,8 +121,7 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
           {r.reviews > 0 ? (
             <>
               <Stars value={r.score} />
-              <span>{r.score.toFixed(1)}</span>
-              <span>· {r.reviews} értékelés</span>
+              <span>{r.reviews} értékelés</span>
             </>
           ) : (
             <span>Még nincs értékelés</span>
@@ -118,15 +129,6 @@ function SidebarItem({ restaurant: r, isSelected, onSelect }: {
         </div>
         {r.district && (
           <div style={{ fontSize: 11, color: 'var(--bb-cocoa-2)', marginTop: 2 }}>{r.district}</div>
-        )}
-      </div>
-
-      {/* Score pill */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-        {r.reviews > 0 ? (
-          <span className="score-pill">{r.score.toFixed(1)}</span>
-        ) : (
-          <span className="bb-chip">Új</span>
         )}
       </div>
     </div>

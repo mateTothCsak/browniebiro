@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import type { Map as LeafletMapInstance, Marker } from 'leaflet';
 import type { Restaurant } from '@/types';
-import { scoreClass } from '@/lib/data';
 
 interface LeafletMapProps {
   restaurants: Restaurant[];
@@ -72,24 +71,21 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
       markersRef.current = [];
 
       restaurants.forEach((r) => {
-        const cls = scoreClass(r.reviews > 0 ? r.score : 0);
         const isSelected = r.id === selectedId;
-        const label = r.reviews > 0
-          ? `<span style="font-size:9px">★</span>${r.score.toFixed(1)}`
-          : 'Új';
+        const graded = r.reviews > 0;
+        // Every place is a brownie pin (Google-Maps style: pins are places,
+        // ratings show on click). Graded places get a small brick dot badge.
         const html = `
-          <div class="map-pin-leaflet">
-            ${r.reviews > 0 && r.score >= 4.7 ? '<span class="pin-pulse"></span>' : ''}
-            <div class="pin-body ${cls}${isSelected ? ' selected' : ''}">
-              ${label}
-            </div>
+          <div class="bb-pin${isSelected ? ' selected' : ''}">
+            <img src="/brownie.png" width="36" height="36" alt="" draggable="false" />
+            ${graded ? '<span class="bb-pin-dot"></span>' : ''}
           </div>`;
 
         const icon = L.divIcon({
           className: 'bb-leaflet-icon',
           html,
-          iconSize: [54, 26],
-          iconAnchor: [27, 26],
+          iconSize: [36, 36],
+          iconAnchor: [18, 32],
         });
 
         const marker = L.marker([r.lat, r.lng], { icon }).addTo(map);

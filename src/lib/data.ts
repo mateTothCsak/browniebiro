@@ -73,11 +73,6 @@ export const HU_RESTAURANTS: Restaurant[] = [
   { id: 'szolnok',         name: 'Szolnok',                   city: 'Szolnok',         district: '', lat: 47.1582, lng: 20.1987, score: 0, reviews: 0 },
 ];
 
-
-export const BROWNIE_TAGS = [
-  'szaftos', 'csokis', 'friss', 'meleg', 'száraz', 'kemény', 'drága', 'olcsó', 'nagy adag', 'átlagos',
-];
-
 /**
  * "Forró" — a standout, highly-rated place. Drives both the map's hot-pin dot and
  * the "Forró" chip in the detail view, so they stay in sync. Deliberately a high bar

@@ -2,6 +2,19 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Review form + display refinements
+
+- **Simpler review form**: dropped tags entirely; the written text is now **optional**
+  (rating-only reviews allowed, with or without a photo); removed the visit-date picker
+  (reviews are posted for today). Ice-cream axis reworded to "Krémes volt, vagy inkább
+  vizes?". Migration 007 drops the body min-length constraint.
+- **Reviews render** the body only when present, so rating-only reviews look right
+  everywhere (detail, profile, leaderboard).
+- **Detail modal**: removed the header image (a recent review photo up there was often
+  irrelevant/off). Photos now live inside the review cards, attributed to the reviewer —
+  including in the leaderboard's most-liked cards.
+- Removed now-dead tag code (`BROWNIE_TAGS`, `.bb-tag` CSS).
+
 ## 2026-07-19 — QA fixes
 
 - **Map dot repurposed**: the pin dot no longer marks "has any review" (which would end

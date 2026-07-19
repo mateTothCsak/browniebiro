@@ -2,7 +2,6 @@
 
 import { useState, useEffect, type ChangeEvent } from 'react';
 import type { Restaurant } from '@/types';
-import { BROWNIE_TAGS } from '@/lib/data';
 import { createClient } from '@/utils/supabase/client';
 import Icon from '@/components/ui/Icon';
 import Stars from '@/components/ui/Stars';
@@ -69,9 +68,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
   const [taste, setTaste] = useState(0);
   const [texture, setTexture] = useState(0);
   const [iceCream, setIceCream] = useState(0);
-  const [visitDate, setVisitDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [body, setBody] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,8 +77,6 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
 
   const allRated = taste > 0 && texture > 0 && iceCream > 0;
   const avgScore = allRated ? ((taste + texture + iceCream) / 3) : 0;
-  const toggleTag = (t: string) =>
-    setTags((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
   // Revoke the preview object URL when it changes / unmounts
   useEffect(() => {
@@ -140,8 +135,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
       texture,
       ice_cream: iceCream,
       body: body.trim(),
-      visit_date: visitDate,
-      tags,
+      visit_date: new Date().toISOString().slice(0, 10), // reviews are posted for today
       photo_url,
     });
 
@@ -209,9 +203,9 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
                 Értékeld három szempont szerint. Az átlag adja a végső pontot.
               </p>
 
-              <AxisRow label="Íz"              hint="Mennyire volt csokis és kiegyensúlyozott?" value={taste}    onChange={setTaste} />
-              <AxisRow label="Textúra"         hint="Szaftos vagy száraz? Megfelelő állag?"      value={texture}  onChange={setTexture} />
-              <AxisRow label="Fagyi vízessége" hint="Frissen vagy elolvadva érkezett?"           value={iceCream} onChange={setIceCream} />
+              <AxisRow label="Íz"      hint="Mennyire volt csokis és kiegyensúlyozott?" value={taste}    onChange={setTaste} />
+              <AxisRow label="Textúra" hint="Szaftos vagy száraz? Megfelelő állag?"      value={texture}  onChange={setTexture} />
+              <AxisRow label="Fagyi"   hint="Krémes volt, vagy inkább vizes?"           value={iceCream} onChange={setIceCream} />
 
               {allRated && (
                 <div style={{
@@ -231,19 +225,6 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
                   </span>
                 </div>
               )}
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-cocoa-2)', display: 'block', marginBottom: 6 }}>
-                  Mikor jártál ott?
-                </label>
-                <input
-                  type="date"
-                  className="bb-input"
-                  value={visitDate}
-                  max={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setVisitDate(e.target.value)}
-                />
-              </div>
             </>
           )}
 
@@ -254,34 +235,16 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
                 Mesélj róla
               </h3>
               <p style={{ fontSize: 13, color: 'var(--bb-cocoa-2)', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Milyen volt? Friss? Szaftos? Az állaga?
+                Írj pár szót róla, ha szeretnél — nem kötelező.
               </p>
 
-              <div style={{ position: 'relative', marginBottom: 8 }}>
-                <textarea
-                  className="bb-textarea"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder="Pl. Kívül kissé ropogós, belül szaftos…"
-                  style={{ minHeight: 112 }}
-                />
-              </div>
-              <div style={{ fontSize: 11, color: body.length < 10 ? 'var(--bb-brick)' : 'var(--bb-cocoa-2)', textAlign: 'right', marginBottom: 16 }}>
-                {body.length}/10 minimum
-              </div>
-
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--bb-cocoa-2)', marginBottom: 8 }}>Jelölők</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {BROWNIE_TAGS.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => toggleTag(t)}
-                    className={`bb-tag${tags.includes(t) ? ' active' : ''}`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+              <textarea
+                className="bb-textarea"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Pl. Kívül kissé ropogós, belül szaftos…"
+                style={{ minHeight: 112 }}
+              />
             </>
           )}
 
@@ -303,14 +266,11 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
                   </span>
                   <Stars value={avgScore} />
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--bb-cocoa-2)', marginBottom: 10 }}>
+                <div style={{ fontSize: 12, color: 'var(--bb-cocoa-2)', marginBottom: body.trim() ? 10 : 0 }}>
                   Íz {taste}/5 · Textúra {texture}/5 · Fagyi {iceCream}/5
                 </div>
-                <p style={{ fontSize: 13, color: 'var(--bb-cocoa)', lineHeight: 1.5, margin: '0 0 10px' }}>{body}</p>
-                {tags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {tags.map((t) => <span key={t} className="bb-chip" style={{ fontSize: 11 }}>#{t}</span>)}
-                  </div>
+                {body.trim() && (
+                  <p style={{ fontSize: 13, color: 'var(--bb-cocoa)', lineHeight: 1.5, margin: 0 }}>{body}</p>
                 )}
               </div>
 
@@ -377,8 +337,8 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
             <button
               onClick={() => setStep(step + 1)}
               className="bb-btn bb-btn-primary"
-              disabled={step === 1 ? !allRated : body.length < 10}
-              style={{ flex: 2, opacity: (step === 1 ? !allRated : body.length < 10) ? 0.45 : 1 }}
+              disabled={step === 1 && !allRated}
+              style={{ flex: 2, opacity: step === 1 && !allRated ? 0.45 : 1 }}
             >
               Tovább
             </button>

@@ -23,7 +23,6 @@ interface ReviewRow {
   avg_score: number;
   body: string;
   visit_date: string;
-  tags: string[] | null;
   photo_url: string | null;
   review_likes: { count: number }[] | null;
   profiles: { display_name: string | null } | null;
@@ -40,7 +39,7 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
     (async () => {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, avg_score, body, visit_date, tags, photo_url, review_likes(count), profiles(display_name)')
+        .select('id, avg_score, body, visit_date, photo_url, review_likes(count), profiles(display_name)')
         .eq('restaurant_id', r.id)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -69,7 +68,6 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
           score: Math.round(Number(row.avg_score)),
           date: row.visit_date,
           body: row.body,
-          tags: row.tags ?? [],
           likes: row.review_likes?.[0]?.count ?? 0,
           liked: likedSet.has(row.id),
           photo_url: row.photo_url,
@@ -108,9 +106,6 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
     { label: 'Fagyi',   value: r.ice_cream_avg ?? 0, color: 'var(--bb-leaf)' },
   ];
 
-  // Hero shows the most recent real review photo (if any) — no generic placeholder.
-  const heroPhoto = reviews?.find((rev) => rev.photo_url)?.photo_url ?? null;
-
   return (
     <Modal onClose={onClose}>
         {/* Nav row */}
@@ -131,14 +126,6 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
 
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' }}>
-          {/* Hero — most recent review photo, if any (nothing when there are none) */}
-          {heroPhoto && (
-            <div style={{ height: 180, marginBottom: 14, borderRadius: 18, overflow: 'hidden' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={heroPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            </div>
-          )}
-
           {/* Tag chips */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
             <span className="bb-chip brick"><Icon name="pin" size={11} /> {r.city}</span>
@@ -268,7 +255,9 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
                     <Stars value={rev.score} />
                   </div>
 
-                  <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
+                  {rev.body.trim() && (
+                    <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
+                  )}
 
                   {rev.photo_url && (
                     /* eslint-disable-next-line @next/next/no-img-element */
@@ -277,14 +266,6 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
                       alt="Brownie fotó"
                       style={{ width: '100%', maxHeight: 260, objectFit: 'cover', borderRadius: 12, marginBottom: 8, display: 'block' }}
                     />
-                  )}
-
-                  {rev.tags.length > 0 && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-                      {rev.tags.map((t) => (
-                        <span key={t} className="bb-chip" style={{ fontSize: 10, padding: '3px 8px' }}>#{t}</span>
-                      ))}
-                    </div>
                   )}
 
                   {/* Like */}

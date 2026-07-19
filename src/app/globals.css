@@ -208,24 +208,6 @@ button { font-family: inherit; cursor: pointer; }
 .bb-input:focus, .bb-textarea:focus { border-color: var(--bb-brick); }
 .bb-textarea { min-height: 96px; resize: none; }
 
-/* ── Tag chips ────────────────────────────────────────── */
-.bb-tag {
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1.5px solid var(--bb-line-strong);
-  background: transparent;
-  color: var(--bb-cocoa);
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-.bb-tag.active {
-  background: var(--bb-ink);
-  color: var(--bb-paper);
-  border-color: var(--bb-ink);
-}
-
 /* ── Leaderboard ──────────────────────────────────────── */
 .lb-row {
   display: grid;

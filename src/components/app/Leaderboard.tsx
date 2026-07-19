@@ -20,6 +20,7 @@ interface TopReview {
   author: string;
   score: number;
   body: string;
+  photo_url: string | null;
   likes: number;
 }
 
@@ -28,6 +29,7 @@ interface TopReviewRow {
   restaurant_id: string;
   avg_score: number;
   body: string;
+  photo_url: string | null;
   review_likes: { count: number }[] | null;
   profiles: { display_name: string | null } | null;
   restaurants: { name: string } | null;
@@ -43,7 +45,7 @@ export default function Leaderboard({ restaurants, onSelect, isMobile }: Leaderb
     const supabase = createClient();
     supabase
       .from('reviews')
-      .select('id, restaurant_id, avg_score, body, review_likes(count), profiles(display_name), restaurants(name)')
+      .select('id, restaurant_id, avg_score, body, photo_url, review_likes(count), profiles(display_name), restaurants(name)')
       .limit(200)
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -56,6 +58,7 @@ export default function Leaderboard({ restaurants, onSelect, isMobile }: Leaderb
             author: row.profiles?.display_name ?? 'Vendég',
             score: Math.round(Number(row.avg_score)),
             body: row.body,
+            photo_url: row.photo_url,
             likes: row.review_likes?.[0]?.count ?? 0,
           }))
           .filter((r) => r.likes > 0)
@@ -173,7 +176,17 @@ export default function Leaderboard({ restaurants, onSelect, isMobile }: Leaderb
                   </div>
                   <Stars value={rev.score} />
                 </div>
-                <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
+                {rev.body.trim() && (
+                  <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
+                )}
+                {rev.photo_url && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={rev.photo_url}
+                    alt="Brownie fotó"
+                    style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 12, marginBottom: 8, display: 'block' }}
+                  />
+                )}
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--bb-brick)', fontWeight: 700, fontSize: 12 }}>
                   <Icon name="heart" size={14} color="var(--bb-brick)" /> {rev.likes}
                 </div>

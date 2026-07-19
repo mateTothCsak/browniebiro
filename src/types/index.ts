@@ -21,7 +21,6 @@ export interface Review {
   score: number;
   date: string;
   body: string;
-  tags: string[];
   likes: number;
   liked?: boolean;
   hasPhoto?: boolean;

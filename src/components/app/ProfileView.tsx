@@ -24,7 +24,6 @@ interface MyReview {
   avgScore: number;
   date: string;
   body: string;
-  tags: string[];
   photo_url: string | null;
 }
 
@@ -34,7 +33,6 @@ interface ReviewRow {
   avg_score: number;
   body: string;
   visit_date: string;
-  tags: string[] | null;
   photo_url: string | null;
   restaurants: { name: string; city: string; district: string | null } | null;
 }
@@ -48,7 +46,7 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
     const supabase = createClient();
     supabase
       .from('reviews')
-      .select('id, restaurant_id, avg_score, body, visit_date, tags, photo_url, restaurants(name, city, district)')
+      .select('id, restaurant_id, avg_score, body, visit_date, photo_url, restaurants(name, city, district)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
@@ -64,7 +62,6 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
           avgScore: Number(row.avg_score),
           date: row.visit_date,
           body: row.body,
-          tags: row.tags ?? [],
           photo_url: row.photo_url,
         })));
       }, () => { if (!cancelled) setReviews([]); });
@@ -177,14 +174,8 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
                   />
                 )}
 
-                <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
-
-                {rev.tags.length > 0 && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {rev.tags.map((t) => (
-                      <span key={t} className="bb-chip" style={{ fontSize: 10, padding: '3px 8px' }}>#{t}</span>
-                    ))}
-                  </div>
+                {rev.body.trim() && (
+                  <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: 'var(--bb-cocoa)' }}>{rev.body}</p>
                 )}
               </div>
             ))}

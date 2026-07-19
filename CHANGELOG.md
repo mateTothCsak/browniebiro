@@ -5,9 +5,11 @@ Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 ## 2026-07-19 — QA fixes
 
 - **Map dot repurposed**: the pin dot no longer marks "has any review" (which would end
-  up on nearly every pin at scale). It now marks **hot** places — highly-rated (≥4.5),
-  sharing one `isHot()` helper with the detail view's "Forró" chip so they can't drift.
-  Legend updated to "Forró — kiemelkedő hely".
+  up on nearly every pin at scale). It now marks **hot** places — highly-rated (≥4.5)
+  AND capped to the top 5, so it stays a scarce highlight even if everything is well
+  rated. Computed once in AppShell (`hotIds`) from the full list; the ≥4.5 floor is the
+  shared `isHot()` helper also used by the detail view's "Forró" chip. Legend updated to
+  "Forró — kiemelkedő hely".
 - **Profile** now lists the user's own reviews (restaurant, score, stars, date, photo,
   tags), newest first; stats derive from the same data; each card opens that place.
 - **Toplista** gained a "Legnépszerűbb vélemények" section — the community's most-liked

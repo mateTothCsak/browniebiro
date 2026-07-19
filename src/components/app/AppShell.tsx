@@ -8,6 +8,7 @@ import type { Restaurant, ActiveView } from '@/types';
 import { useUser } from '@/hooks/useUser';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { signInWithGoogle } from '@/lib/auth';
+import { isHot } from '@/lib/data';
 import TopBar from './TopBar';
 import RestaurantSidebar from './RestaurantSidebar';
 import RestaurantDetail from './RestaurantDetail';
@@ -55,6 +56,17 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
       .filter((r) => !q || r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q))
       .sort((a, b) => b.score - a.score || b.reviews - a.reviews || a.name.localeCompare(b.name, 'hu'));
   }, [restaurants, searchQuery]);
+
+  // The "hot" pin dot: the 5 best highly-rated (>=4.5) places. Capped so the
+  // dot stays a scarce highlight even if everything ends up well rated.
+  // Computed from the full list (not the search filter) so it stays stable.
+  const hotIds = useMemo(() => new Set(
+    restaurants
+      .filter((r) => isHot(r.score, r.reviews))
+      .sort((a, b) => b.score - a.score || b.reviews - a.reviews)
+      .slice(0, 5)
+      .map((r) => r.id),
+  ), [restaurants]);
 
   const handleSelect = useCallback((r: Restaurant) => {
     setSelectedRestaurant(r);
@@ -110,6 +122,7 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
                 restaurants={filtered}
                 selectedId={selectedRestaurant?.id ?? null}
                 onSelect={handleSelect}
+                hotIds={hotIds}
               />
             </div>
             <RestaurantSidebar
@@ -137,6 +150,7 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
                 restaurants={filtered}
                 selectedId={selectedRestaurant?.id ?? null}
                 onSelect={handleSelect}
+                hotIds={hotIds}
               />
 
               {/* Legend */}

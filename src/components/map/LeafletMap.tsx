@@ -4,15 +4,16 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import type { Map as LeafletMapInstance, Marker } from 'leaflet';
 import type { Restaurant } from '@/types';
-import { isHot } from '@/lib/data';
 
 interface LeafletMapProps {
   restaurants: Restaurant[];
   selectedId: string | null;
   onSelect: (r: Restaurant) => void;
+  /** IDs of the "hot" places that get the dot (capped set — see AppShell). */
+  hotIds: Set<string>;
 }
 
-export default function LeafletMap({ restaurants, selectedId, onSelect }: LeafletMapProps) {
+export default function LeafletMap({ restaurants, selectedId, onSelect, hotIds }: LeafletMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMapInstance | null>(null);
   const markersRef = useRef<Marker[]>([]);
@@ -74,9 +75,9 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
       restaurants.forEach((r) => {
         const isSelected = r.id === selectedId;
         // Every place is a brownie pin (Google-Maps style: pins are places,
-        // ratings show on click). Only "hot" (highly-rated) places get the dot,
-        // so it stays a sparse highlight rather than marking every reviewed spot.
-        const hot = isHot(r.score, r.reviews);
+        // ratings show on click). Only the capped "hot" set gets the dot, so it
+        // stays a sparse highlight no matter how many places are highly rated.
+        const hot = hotIds.has(r.id);
         const html = `
           <div class="bb-pin${isSelected ? ' selected' : ''}">
             <img src="/brownie.png" width="36" height="36" alt="" draggable="false" />
@@ -97,7 +98,7 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
     });
 
     return () => { cancelled = true; };
-  }, [restaurants, selectedId, onSelect, ready]);
+  }, [restaurants, selectedId, onSelect, ready, hotIds]);
 
   return (
     <div

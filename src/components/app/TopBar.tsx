@@ -132,6 +132,20 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
             <div style={{ fontSize: 11, color: 'var(--bb-cocoa-2)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
           </div>
           <button
+            onClick={() => { setMenuOpen(false); onViewChange('profile'); }}
+            style={{
+              width: '100%', textAlign: 'left',
+              background: 'transparent', border: 'none',
+              padding: '8px 10px', borderRadius: 10,
+              fontSize: 13, fontWeight: 600, color: 'var(--bb-cocoa)',
+              cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <Icon name="user" size={15} color="var(--bb-cocoa-2)" />
+            Profilom
+          </button>
+          <button
             onClick={() => { setMenuOpen(false); signOut(); }}
             style={{
               width: '100%', textAlign: 'left',

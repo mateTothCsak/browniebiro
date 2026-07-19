@@ -6,11 +6,10 @@ import Icon from './Icon';
 
 interface ShareCardModalProps {
   reviewId: string;
-  restaurantName: string;
   onClose: () => void;
 }
 
-export default function ShareCardModal({ reviewId, restaurantName, onClose }: ShareCardModalProps) {
+export default function ShareCardModal({ reviewId, onClose }: ShareCardModalProps) {
   const [busy, setBusy] = useState(false);
   const cardUrl = `${window.location.origin}/api/card?review=${reviewId}`;
 
@@ -21,20 +20,6 @@ export default function ShareCardModal({ reviewId, restaurantName, onClose }: Sh
     a.download = 'brownie-ertekeles.png';
     a.click();
     setTimeout(() => URL.revokeObjectURL(u), 1000);
-  };
-
-  const shareImage = async () => {
-    setBusy(true);
-    try {
-      const blob = await (await fetch(cardUrl)).blob();
-      const file = new File([blob], 'brownie-ertekeles.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'BrownieBíró', text: `${restaurantName} — az értékelésem a BrownieBírón 🍫` });
-      } else {
-        download(blob);
-      }
-    } catch { /* user cancelled or network — nothing to do */ }
-    setBusy(false);
   };
 
   const downloadImage = async () => {
@@ -60,13 +45,11 @@ export default function ShareCardModal({ reviewId, restaurantName, onClose }: Sh
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={cardUrl} alt="Értékelés kártya" style={{ width: '100%', maxHeight: '56vh', objectFit: 'contain', borderRadius: 12, border: '1px solid var(--bb-line)', display: 'block', background: 'var(--bb-cream-2)' }} />
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={shareImage} disabled={busy} className="bb-btn bb-btn-primary" style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: busy ? 0.6 : 1 }}>
-            <Icon name="share" size={15} color="currentColor" /> {busy ? 'Kép…' : 'Megosztás'}
-          </button>
-          <button onClick={downloadImage} disabled={busy} className="bb-btn bb-btn-ghost" style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: busy ? 0.6 : 1 }}>
-            <Icon name="check" size={15} color="currentColor" /> Letöltés
-          </button>
+        <button onClick={downloadImage} disabled={busy} className="bb-btn bb-btn-primary" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, opacity: busy ? 0.6 : 1 }}>
+          <Icon name="download" size={16} color="currentColor" /> {busy ? 'Kép előkészítése…' : 'Kép letöltése'}
+        </button>
+        <div style={{ fontSize: 12, color: 'var(--bb-cocoa-2)', textAlign: 'center', marginTop: -4 }}>
+          Töltsd le a képet, és oszd meg a barátaiddal!
         </div>
       </div>
     </Modal>

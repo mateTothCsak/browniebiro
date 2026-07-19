@@ -39,6 +39,7 @@ export default function Icon({ name, size = 18, color, className }: IconProps) {
     case 'filter':     return <svg {...props}><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z"/></svg>;
     case 'edit':       return <svg {...props}><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>;
     case 'share':      return <svg {...props}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>;
+    case 'download':   return <svg {...props}><path d="M12 3v12M7 12l5 5 5-5M5 21h14"/></svg>;
     default:           return null;
   }
 }

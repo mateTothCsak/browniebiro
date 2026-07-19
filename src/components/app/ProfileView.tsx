@@ -221,7 +221,6 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
     {shareCard && (
       <ShareCardModal
         reviewId={shareCard.id}
-        restaurantName={shareCard.name}
         onClose={() => setShareCard(null)}
       />
     )}

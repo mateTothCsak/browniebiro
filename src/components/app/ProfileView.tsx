@@ -4,28 +4,70 @@ import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import { signOut, displayName, initials } from '@/lib/auth';
+import Stars from '@/components/ui/Stars';
+import Icon from '@/components/ui/Icon';
 
 interface ProfileViewProps {
   user: User | null;
   onLogin: () => void;
   isMobile: boolean;
+  onOpenRestaurant?: (restaurantId: string) => void;
 }
 
-export default function ProfileView({ user, onLogin, isMobile }: ProfileViewProps) {
-  const [stats, setStats] = useState<{ reviews: number; places: number } | null>(null);
+interface MyReview {
+  id: string;
+  restaurantId: string;
+  name: string;
+  city: string;
+  district: string;
+  score: number;
+  avgScore: number;
+  date: string;
+  body: string;
+  tags: string[];
+  photo_url: string | null;
+}
+
+interface ReviewRow {
+  id: string;
+  restaurant_id: string;
+  avg_score: number;
+  body: string;
+  visit_date: string;
+  tags: string[] | null;
+  photo_url: string | null;
+  restaurants: { name: string; city: string; district: string | null } | null;
+}
+
+export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant }: ProfileViewProps) {
+  const [reviews, setReviews] = useState<MyReview[] | null>(null);
 
   useEffect(() => {
-    if (!user) return; // stats aren't rendered while logged out
+    if (!user) return;
     let cancelled = false;
     const supabase = createClient();
     supabase
       .from('reviews')
-      .select('restaurant_id')
+      .select('id, restaurant_id, avg_score, body, visit_date, tags, photo_url, restaurants(name, city, district)')
       .eq('user_id', user.id)
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        setStats({ reviews: data.length, places: new Set(data.map((d) => d.restaurant_id)).size });
-      }, () => { /* ignore stats fetch errors — the profile still renders */ });
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data) { setReviews([]); return; }
+        setReviews((data as unknown as ReviewRow[]).map((row) => ({
+          id: row.id,
+          restaurantId: row.restaurant_id,
+          name: row.restaurants?.name ?? 'Ismeretlen helyszín',
+          city: row.restaurants?.city ?? '',
+          district: row.restaurants?.district ?? '',
+          score: Math.round(Number(row.avg_score)),
+          avgScore: Number(row.avg_score),
+          date: row.visit_date,
+          body: row.body,
+          tags: row.tags ?? [],
+          photo_url: row.photo_url,
+        })));
+      }, () => { if (!cancelled) setReviews([]); });
     return () => { cancelled = true; };
   }, [user]);
 
@@ -48,11 +90,13 @@ export default function ProfileView({ user, onLogin, isMobile }: ProfileViewProp
 
   const name = displayName(user);
   const memberSince = new Date(user.created_at).getFullYear();
+  const reviewCount = reviews?.length ?? null;
+  const placeCount = reviews ? new Set(reviews.map((r) => r.restaurantId)).size : null;
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bb-cream)' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bb-cream)', overflow: 'hidden' }}>
       {/* Header band */}
-      <div style={{ background: 'var(--bb-cocoa)', padding: isMobile ? '20px 16px' : '32px 48px', display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: 'wrap' }}>
+      <div style={{ background: 'var(--bb-cocoa)', padding: isMobile ? '20px 16px' : '32px 48px', display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: 'wrap', flexShrink: 0 }}>
         <div className="bb-avatar" style={{ width: 64, height: 64, fontSize: 22, background: 'var(--bb-amber)', color: 'var(--bb-cocoa)', flexShrink: 0 }}>
           {initials(name)}
         </div>
@@ -64,8 +108,8 @@ export default function ProfileView({ user, onLogin, isMobile }: ProfileViewProp
         </div>
         <div style={{ marginLeft: isMobile ? 0 : 'auto', width: isMobile ? '100%' : 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
           {[
-            { label: String(stats?.reviews ?? '–'), sub: 'értékelés' },
-            { label: String(stats?.places ?? '–'), sub: 'helyszín' },
+            { label: reviewCount ?? '–', sub: 'értékelés' },
+            { label: placeCount ?? '–', sub: 'helyszín' },
           ].map((s) => (
             <div key={s.sub} style={{ textAlign: 'center', background: 'rgba(255,250,240,0.10)', padding: '12px 20px', borderRadius: 14 }}>
               <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontWeight: 700, fontSize: 22, color: 'var(--bb-amber)' }}>{s.label}</div>
@@ -85,22 +129,66 @@ export default function ProfileView({ user, onLogin, isMobile }: ProfileViewProp
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, padding: isMobile ? '28px 16px' : '32px 48px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, color: 'var(--bb-cocoa-2)', textAlign: 'center' }}>
-        {stats && stats.reviews > 0 ? (
-          <>
-            <div style={{ fontSize: 48 }}>🏅</div>
-            <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--bb-cocoa)', fontWeight: 600 }}>
-              Eddig {stats.reviews} értékelést adtál le {stats.places} helyszínen
-            </div>
-            <div style={{ fontSize: 14 }}>Így tovább, bíró! 🍫</div>
-          </>
-        ) : (
-          <>
+      {/* Content — the user's reviews */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 16px' : '28px 48px' }}>
+        {reviews === null ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', fontSize: 14, color: 'var(--bb-cocoa-2)' }}>
+            Értékeléseid betöltése…
+          </div>
+        ) : reviews.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '48px 16px', textAlign: 'center', color: 'var(--bb-cocoa-2)' }}>
             <div style={{ fontSize: 48 }}>🍫</div>
             <div style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, color: 'var(--bb-cocoa)', fontWeight: 600 }}>Még nincs értékelésed</div>
             <div style={{ fontSize: 14 }}>Látogass meg egy helyszínt és értékeld a brownie-t!</div>
-          </>
+          </div>
+        ) : (
+          <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <h3 style={{ margin: '0 0 2px', fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontSize: 20, fontWeight: 600, color: 'var(--bb-cocoa)' }}>
+              Értékeléseid
+            </h3>
+            {reviews.map((rev) => (
+              <div
+                key={rev.id}
+                onClick={() => onOpenRestaurant?.(rev.restaurantId)}
+                className="bb-card"
+                style={{ padding: 14, cursor: onOpenRestaurant ? 'pointer' : 'default' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--bb-cocoa)' }}>{rev.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--bb-cocoa-2)', display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
+                      <span>{rev.city}{rev.district ? ` · ${rev.district}` : ''}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                        <Icon name="calendar" size={10} /> {rev.date}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="score-pill" style={{ flexShrink: 0 }}>{rev.avgScore.toFixed(1)}</span>
+                </div>
+
+                <div style={{ marginBottom: 8 }}><Stars value={rev.score} /></div>
+
+                {rev.photo_url && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={rev.photo_url}
+                    alt="Brownie fotó"
+                    style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 12, marginBottom: 8, display: 'block' }}
+                  />
+                )}
+
+                <p style={{ fontSize: 13, lineHeight: 1.5, margin: '0 0 8px', color: 'var(--bb-cocoa)' }}>{rev.body}</p>
+
+                {rev.tags.length > 0 && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {rev.tags.map((t) => (
+                      <span key={t} className="bb-chip" style={{ fontSize: 10, padding: '3px 8px' }}>#{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -175,7 +175,15 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
         )}
 
         {activeView === 'profile' && (
-          <ProfileView user={user} onLogin={signInWithGoogle} isMobile={isMobile} />
+          <ProfileView
+            user={user}
+            onLogin={signInWithGoogle}
+            isMobile={isMobile}
+            onOpenRestaurant={(id) => {
+              const r = restaurants.find((x) => x.id === id);
+              if (r) handleSelect(r);
+            }}
+          />
         )}
       </div>
 

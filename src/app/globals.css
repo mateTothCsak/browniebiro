@@ -139,27 +139,6 @@ button { font-family: inherit; cursor: pointer; }
   flex-shrink: 0;
 }
 
-/* ── Photo placeholder ────────────────────────────────── */
-.bb-photo-ph {
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(58,36,26,0.06) 0 8px,
-      rgba(58,36,26,0.02) 8px 16px
-    ),
-    var(--bb-cream-2);
-  border: 1px dashed var(--bb-line-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-jetbrains-mono, monospace);
-  font-size: 10px;
-  color: var(--bb-cocoa-2);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-radius: var(--bb-radius-m);
-}
-
 /* ── Score pill ───────────────────────────────────────── */
 .score-pill {
   display: inline-flex;

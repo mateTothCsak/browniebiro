@@ -6,6 +6,7 @@ import { BROWNIE_TAGS } from '@/lib/data';
 import { createClient } from '@/utils/supabase/client';
 import Icon from '@/components/ui/Icon';
 import Stars from '@/components/ui/Stars';
+import Modal from '@/components/ui/Modal';
 
 interface SubmitReviewProps {
   restaurant: Restaurant;
@@ -82,12 +83,6 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
   const toggleTag = (t: string) =>
     setTags((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   // Revoke the preview object URL when it changes / unmounts
   useEffect(() => {
     return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
@@ -125,7 +120,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
     // Upload the photo first (if any) so we can store its URL on the review
     let photo_url: string | null = null;
     if (photoFile) {
-      const ext = (photoFile.name.split('.').pop() || 'jpg').toLowerCase();
+      const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as Record<string, string>)[photoFile.type] ?? 'jpg';
       const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from('review-photos')
@@ -166,32 +161,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
 
   return (
     <>
-      {/* Overlay flex-centers the modal (no positioning transform, so the
-          bb-rise animation's transform doesn't clobber the centering). */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 40,
-          background: 'rgba(26,20,16,0.45)',
-          backdropFilter: 'blur(2px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 16,
-          animation: 'bb-fade 200ms ease both',
-        }}
-      >
-      {/* Modal */}
-      <div
-        className="bb-rise"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 480, maxHeight: '92vh',
-          background: 'var(--bb-cream)',
-          borderRadius: 'var(--bb-radius-xl)',
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: 'var(--bb-shadow-lg)',
-        }}
-      >
+      <Modal onClose={onClose} maxHeight="92vh">
         {/* Header */}
         <div style={{ padding: '14px 16px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
@@ -424,8 +394,7 @@ export default function SubmitReview({ restaurant, onClose, onSuccess }: SubmitR
             </button>
           )}
         </div>
-      </div>
-      </div>
+      </Modal>
 
       {/* Toast — outer div does the horizontal centering via flex so the
           inner pill's bb-rise transform doesn't fight a translateX. */}

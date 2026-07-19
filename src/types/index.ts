@@ -28,5 +28,4 @@ export interface Review {
   photo_url?: string | null;
 }
 
-export type ScoreClass = 'score-best' | 'score-high' | 'score-mid' | 'score-low' | 'score-none';
 export type ActiveView = 'map' | 'leaderboard' | 'profile';

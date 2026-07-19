@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import DesktopApp from '@/components/desktop/DesktopApp';
+import AppShell from '@/components/app/AppShell';
 import { getRestaurants } from '@/lib/restaurants';
 
 export const dynamic = 'force-dynamic';
@@ -9,7 +9,7 @@ export default async function Page() {
 
   return (
     <Suspense>
-      <DesktopApp restaurants={restaurants} live={live} />
+      <AppShell restaurants={restaurants} live={live} />
     </Suspense>
   );
 }

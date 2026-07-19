@@ -2,6 +2,20 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Cleanup refactor (no behavior change)
+
+Code-review pass to keep the codebase from drifting into spaghetti:
+- Renamed `components/desktop/` → `components/app/` and `DesktopApp` → `AppShell`
+  (the folder handled mobile too, so the name lied).
+- Split `Leaderboard` and `ProfileView` out of the 400-line shell into their own files.
+- Extracted a single `components/ui/Modal` primitive; `RestaurantDetail` and
+  `SubmitReview` now share it instead of each re-implementing the overlay (the exact
+  duplication behind the earlier off-screen-modal bug).
+- Deleted dead code: `lib/supabase/client.ts` shim, `scoreClass()`/`ScoreClass`,
+  `.bb-photo-ph` CSS.
+- Hardened: review photo extension now derives from MIME type, not the filename;
+  `ProfileView` stats fetch has an error guard.
+
 ## 2026-07-19 — Photos, likes, mobile
 
 ### Added

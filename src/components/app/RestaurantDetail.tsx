@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
 import BrowniePinIcon from '@/components/ui/BrowniePinIcon';
+import Modal from '@/components/ui/Modal';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 import { initials, signInWithGoogle } from '@/lib/auth';
@@ -107,41 +108,8 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
     { label: 'Fagyi',   value: r.ice_cream_avg ?? 0, color: 'var(--bb-leaf)' },
   ];
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 40,
-        background: 'rgba(26,20,16,0.45)',
-        backdropFilter: 'blur(2px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 16,
-        animation: 'bb-fade 200ms ease both',
-      }}
-    >
-      {/* Modal — flex-centered by the overlay above; no positioning transform,
-          so the bb-rise animation's transform doesn't clobber the centering. */}
-      <div
-        className="bb-rise"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: 480,
-          maxHeight: '90vh',
-          background: 'var(--bb-cream)',
-          borderRadius: 'var(--bb-radius-xl)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: 'var(--bb-shadow-lg)',
-        }}
-      >
+    <Modal onClose={onClose}>
         {/* Nav row */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px 8px', gap: 10, flexShrink: 0 }}>
           <button
@@ -338,7 +306,6 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

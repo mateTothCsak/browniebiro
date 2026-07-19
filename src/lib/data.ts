@@ -1,4 +1,4 @@
-import type { Restaurant, ScoreClass } from '@/types';
+import type { Restaurant } from '@/types';
 
 export const HU_RESTAURANTS: Restaurant[] = [
   // Budapest (30)
@@ -77,11 +77,3 @@ export const HU_RESTAURANTS: Restaurant[] = [
 export const BROWNIE_TAGS = [
   'szaftos', 'csokis', 'friss', 'meleg', 'száraz', 'kemény', 'drága', 'olcsó', 'nagy adag', 'átlagos',
 ];
-
-export function scoreClass(score: number): ScoreClass {
-  if (score <= 0) return 'score-none';
-  if (score >= 4.7) return 'score-best';
-  if (score >= 4.4) return 'score-high';
-  if (score >= 4.0) return 'score-mid';
-  return 'score-low';
-}

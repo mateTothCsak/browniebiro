@@ -26,7 +26,12 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
   const [menuOpen, setMenuOpen] = useState(false);
 
   const brandEl = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+    <div
+      onClick={() => onViewChange('map')}
+      role="button"
+      aria-label="Főoldal"
+      style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, cursor: 'pointer' }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo-judge.png" alt="BrownieBíró logó" width={isMobile ? 34 : 40} height={isMobile ? 34 : 40} style={{ flexShrink: 0, display: 'block' }} />
       <div style={{ display: 'flex', flexDirection: 'column' }}>

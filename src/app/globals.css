@@ -262,3 +262,12 @@ button { font-family: inherit; cursor: pointer; }
 
 .bb-rise { animation: bb-rise 320ms cubic-bezier(.2,.8,.2,1) both; }
 .bb-fade { animation: bb-fade 240ms ease both; }
+
+@keyframes bb-spin { to { transform: rotate(360deg); } }
+.bb-spinner {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--bb-line);
+  border-top-color: var(--bb-brick);
+  animation: bb-spin 0.7s linear infinite;
+}

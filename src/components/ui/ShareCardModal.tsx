@@ -11,6 +11,7 @@ interface ShareCardModalProps {
 
 export default function ShareCardModal({ reviewId, onClose }: ShareCardModalProps) {
   const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const cardUrl = `${window.location.origin}/api/card?review=${reviewId}`;
 
   const download = (blob: Blob) => {
@@ -41,9 +42,23 @@ export default function ShareCardModal({ reviewId, onClose }: ShareCardModalProp
         </div>
 
         {/* Live preview of the generated card (portrait — cap height so the
-            buttons stay visible on small screens). */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={cardUrl} alt="Értékelés kártya" style={{ width: '100%', maxHeight: '56vh', objectFit: 'contain', borderRadius: 12, border: '1px solid var(--bb-line)', display: 'block', background: 'var(--bb-cream-2)' }} />
+            buttons stay visible on small screens). A spinner shows while the
+            card image is being generated on the server. */}
+        <div style={{ position: 'relative', minHeight: 200, borderRadius: 12, border: '1px solid var(--bb-line)', background: 'var(--bb-cream-2)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {!loaded && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: 40, color: 'var(--bb-cocoa-2)' }}>
+              <div className="bb-spinner" />
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Kártya készítése…</div>
+            </div>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cardUrl}
+            alt="Értékelés kártya"
+            onLoad={() => setLoaded(true)}
+            style={{ width: '100%', maxHeight: '56vh', objectFit: 'contain', display: loaded ? 'block' : 'none' }}
+          />
+        </div>
 
         <button onClick={downloadImage} disabled={busy} className="bb-btn bb-btn-primary" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, opacity: busy ? 0.6 : 1 }}>
           <Icon name="download" size={16} color="currentColor" /> {busy ? 'Kép előkészítése…' : 'Kép letöltése'}

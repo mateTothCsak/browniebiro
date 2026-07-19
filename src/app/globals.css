@@ -169,13 +169,13 @@ button { font-family: inherit; cursor: pointer; }
   filter: drop-shadow(0 3px 5px rgba(58,36,26,0.55));
   z-index: 1000;
 }
-.bb-pin-dot {
+.bb-pin-fire {
   position: absolute;
-  top: -2px; right: -2px;
-  width: 11px; height: 11px;
-  border-radius: 50%;
-  background: var(--bb-brick);
-  border: 2px solid var(--bb-paper);
+  top: -3px; right: 2px;
+  font-size: 14px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(58,36,26,0.4));
 }
 
 /* Leaflet controls */

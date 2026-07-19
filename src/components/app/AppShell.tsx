@@ -176,7 +176,7 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
                   Brownie-helyszín
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: 'var(--bb-cocoa-2)' }}>
-                  <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--bb-brick)', border: '1.5px solid var(--bb-paper)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, lineHeight: 1, flexShrink: 0 }}>🔥</span>
                   Forró — kiemelkedő hely
                 </div>
               </div>

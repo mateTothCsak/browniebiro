@@ -81,7 +81,7 @@ export default function LeafletMap({ restaurants, selectedId, onSelect, hotIds }
         const html = `
           <div class="bb-pin${isSelected ? ' selected' : ''}">
             <img src="/brownie.png" width="36" height="36" alt="" draggable="false" />
-            ${hot ? '<span class="bb-pin-dot"></span>' : ''}
+            ${hot ? '<span class="bb-pin-fire">🔥</span>' : ''}
           </div>`;
 
         const icon = L.divIcon({

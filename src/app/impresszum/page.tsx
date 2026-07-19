@@ -31,13 +31,14 @@ export default function ImpresszumPage() {
 
           <Section title="A weboldalról">
             <p>
-              A BrownieBíró egy <strong>nem hivatalos rajongói oldal</strong>, amely nem áll kapcsolatban
-              semmilyen gyorsétteremlánccal, és nem képviseli azok érdekeit.
-              Az itt megjelenő értékelések kizárólag a felhasználók független véleményét tükrözik.
+              A BrownieBíró egy <strong>nem hivatalos Burger King brownie rajongói oldal</strong>, amely nem áll
+              kapcsolatban a Burger King<sup>®</sup>-gel vagy annak üzemeltetőivel, és nem képviseli azok
+              érdekeit. A „Burger King” név és logó a jogtulajdonosok védjegye. Az itt megjelenő értékelések
+              kizárólag a felhasználók független véleményét tükrözik.
             </p>
             <p>
-              Az oldal célja, hogy segítse a látogatókat a legjobb brownie megtalálásában
-              Magyarország különböző éttermeiben.
+              Az oldal célja, hogy segítse a látogatókat a legjobb Burger King brownie megtalálásában
+              Magyarország Burger King éttermeiben.
             </p>
           </Section>
 
@@ -48,7 +49,7 @@ export default function ImpresszumPage() {
               Az oldalt magánszemélyként üzemeltetem, nem kereskedelmi céllal.
             </p>
             <p>
-              Kapcsolat: <a href="mailto:hello@browniebiro.hu" style={{ color: 'var(--bb-brick)' }}>hello@browniebiro.hu</a>
+              Kapcsolat: <a href="mailto:tothcsakmate@gmail.com" style={{ color: 'var(--bb-brick)' }}>tothcsakmate@gmail.com</a>
             </p>
           </Section>
 
@@ -92,7 +93,7 @@ export default function ImpresszumPage() {
         </div>
 
         <p style={{ textAlign: 'center', marginTop: 32, fontSize: 11, color: 'var(--bb-cocoa-2)' }}>
-          Nem hivatalos rajongói oldal · független értékelések · {new Date().getFullYear()}
+          Nem hivatalos Burger King brownie rajongói oldal · független értékelések · {new Date().getFullYear()}
         </p>
       </div>
     </div>

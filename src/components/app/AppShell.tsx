@@ -226,7 +226,7 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
         flexShrink: 0,
       }}>
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {isMobile ? 'Nem hivatalos rajongói oldal' : 'Nem hivatalos rajongói oldal · független értékelések'}
+          {isMobile ? 'Nem hivatalos Burger King brownie rajongói oldal' : 'Nem hivatalos Burger King brownie rajongói oldal · független értékelések'}
         </span>
         <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>
           Impresszum

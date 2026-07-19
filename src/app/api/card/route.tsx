@@ -42,11 +42,11 @@ export async function GET(request: Request) {
             ) : null}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', fontSize: 76, fontWeight: 800, fontStyle: 'italic' }}>BrownieBíró</div>
-              <div style={{ display: 'flex', fontSize: 34, color: '#5b3a26' }}>Hol a legjobb brownie az országban?</div>
+              <div style={{ display: 'flex', fontSize: 34, color: '#5b3a26' }}>Hol a legjobb Burger King brownie?</div>
             </div>
           </div>
           <div style={{ display: 'flex', fontSize: 27, color: '#5b3a26', marginTop: 44 }}>
-            Értékeld és fedezd fel Magyarország legjobb brownie-jait · {host}
+            Nem hivatalos Burger King brownie rajongói oldal · {host}
           </div>
         </div>
       ),

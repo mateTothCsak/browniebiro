@@ -29,17 +29,23 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo-judge.png" alt="BrownieBíró logó" width={isMobile ? 34 : 40} height={isMobile ? 34 : 40} style={{ flexShrink: 0, display: 'block' }} />
-      <h1 style={{
-        margin: 0,
-        fontFamily: 'var(--font-fraunces, serif)',
-        fontStyle: 'italic',
-        fontWeight: 600,
-        fontSize: isMobile ? 19 : 22,
-        letterSpacing: '-0.01em',
-        color: 'var(--bb-cocoa)',
-      }}>
-        BrownieBíró
-      </h1>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <h1 style={{
+          margin: 0,
+          fontFamily: 'var(--font-fraunces, serif)',
+          fontStyle: 'italic',
+          fontWeight: 600,
+          fontSize: isMobile ? 19 : 22,
+          letterSpacing: '-0.01em',
+          color: 'var(--bb-cocoa)',
+          lineHeight: 1.1,
+        }}>
+          BrownieBíró
+        </h1>
+        <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 600, color: 'var(--bb-cocoa-2)' }}>
+          A legjobb Burger King brownie nyomában
+        </div>
+      </div>
     </div>
   );
 

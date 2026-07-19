@@ -197,7 +197,7 @@ export default function Leaderboard({ restaurants, onSelect, isMobile }: Leaderb
       )}
 
       <p style={{ textAlign: 'center', marginTop: 32, fontSize: 11, color: 'var(--bb-cocoa-2)' }}>
-        Nem hivatalos rajongói oldal · független értékelések
+        Nem hivatalos Burger King brownie rajongói oldal · független értékelések
       </p>
     </div>
   );

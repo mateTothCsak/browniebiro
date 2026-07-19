@@ -2,6 +2,17 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Shareable review cards
+
+- **`/api/card` (next/og)**: renders a branded PNG of a review — judge logo, restaurant,
+  big score + stars, 🔥 Forró if hot, a text snippet, the Íz/Textúra/Fagyi bars, author,
+  and URL. `ShareCardModal` previews it and shares the **image file** (Web Share sheet on
+  mobile) or downloads it; wired to a "Oszd meg az értékelést" button on the profile's own
+  review cards.
+- The same route with no review renders a **brand card**, now used as the site's Open
+  Graph / Twitter **link-preview image** (layout `metadata` + `metadataBase`), so pasted
+  links show a proper card. Set `NEXT_PUBLIC_SITE_URL` in Vercel when the domain changes.
+
 ## 2026-07-19 — Logo
 
 - Real logo: a friendly Hungarian "bíró" (judge) mascot in a circular amber-ring badge

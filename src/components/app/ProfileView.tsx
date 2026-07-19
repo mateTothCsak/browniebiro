@@ -7,6 +7,7 @@ import { signOut, displayName, initials } from '@/lib/auth';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
 import ShareModal from '@/components/ui/ShareModal';
+import ShareCardModal from '@/components/ui/ShareCardModal';
 
 interface ProfileViewProps {
   user: User | null;
@@ -41,6 +42,7 @@ interface ReviewRow {
 export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant }: ProfileViewProps) {
   const [reviews, setReviews] = useState<MyReview[] | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [shareCard, setShareCard] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -191,6 +193,15 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
                 {rev.body.trim() && (
                   <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0, color: 'var(--bb-cocoa)' }}>{rev.body}</p>
                 )}
+
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShareCard({ id: rev.id, name: rev.name }); }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--bb-brick)', fontWeight: 700, fontSize: 12 }}
+                  >
+                    <Icon name="share" size={13} color="var(--bb-brick)" /> Oszd meg az értékelést
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -205,6 +216,13 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
         heading="Hívd meg a barátaidat"
         subtitle="Oszd meg a BrownieBírót, hogy ők is értékelhessenek."
         onClose={() => setShareOpen(false)}
+      />
+    )}
+    {shareCard && (
+      <ShareCardModal
+        reviewId={shareCard.id}
+        restaurantName={shareCard.name}
+        onClose={() => setShareCard(null)}
       />
     )}
     </>

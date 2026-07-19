@@ -3,11 +3,12 @@
 Open and planned work, roughly in priority order. Shipped items move to `CHANGELOG.md`.
 
 ## Next up
-- **Shareable review card image** — generate a branded PNG summarising a review (score,
-  restaurant, 3-axis breakdown, 🔥 if hot, reviewer, URL) via Next.js `ImageResponse`
-  (`next/og`). Share the image file (Web Share on mobile / download on desktop) from the
-  profile review cards and the submit-success screen. Reuse the same image as the Open
-  Graph link-preview so pasted links show the card too.
+- **"Share your rating" prompt on submit success** — after posting a review, offer the
+  ShareCardModal for the just-created review (needs the insert to return its id). The
+  highest-intent moment to share; the card infra (`/api/card`, `ShareCardModal`) is done.
+- **Per-review link previews** — a `/r/[id]` page whose OG image is that review's
+  `/api/card?review=id`, so a shared review link previews the specific card (the generic
+  brand card is already the site-wide OG).
 
 ## Backlog
 - **Custom domain** (`browniebiro.hu`) — buy + point DNS at Vercel; update Supabase Site

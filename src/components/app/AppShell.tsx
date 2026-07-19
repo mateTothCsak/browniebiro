@@ -214,23 +214,27 @@ export default function AppShell({ restaurants, live }: AppShellProps) {
 
       {/* Footer */}
       <footer style={{
-        padding: isMobile ? '6px 14px' : '8px 28px',
+        padding: isMobile ? '5px 14px' : '7px 28px',
         background: 'var(--bb-paper)',
         borderTop: '1px solid var(--bb-line)',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 10,
+        flexDirection: 'column',
+        gap: 2,
         fontSize: isMobile ? 10 : 11,
         color: 'var(--bb-cocoa-2)',
         flexShrink: 0,
       }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {isMobile ? 'Nem hivatalos Burger King brownie rajongói oldal' : 'Nem hivatalos Burger King brownie rajongói oldal · független értékelések'}
-        </span>
-        <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>
-          Impresszum
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {isMobile ? 'Nem hivatalos Burger King brownie rajongói oldal' : 'Nem hivatalos Burger King brownie rajongói oldal · független értékelések'}
+          </span>
+          <Link href="/impresszum" style={{ color: 'var(--bb-cocoa-2)', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>
+            Impresszum
+          </Link>
+        </div>
+        <div style={{ textAlign: 'center', fontSize: isMobile ? 9 : 10, opacity: 0.8 }}>
+          Ez az oldal a Tócsa DPK támogatásával jött létre
+        </div>
       </footer>
 
       {/* Submit review */}

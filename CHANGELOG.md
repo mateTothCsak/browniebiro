@@ -2,6 +2,14 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Sharing
+
+- **Share** (`components/ui/ShareModal`): share button in the restaurant detail (shares a
+  deep link `?focus=<slug>` that opens that place) and an amber "Oszd meg" invite button
+  in the profile header (shares the site). The modal shows a brand-coloured **QR code**,
+  a copy-link button, and the native share sheet on devices that support it. Adds the
+  `qrcode` dependency.
+
 ## 2026-07-19 — Review form + display refinements
 
 - **Simpler review form**: dropped tags entirely; the written text is now **optional**

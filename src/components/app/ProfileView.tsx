@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { signOut, displayName, initials } from '@/lib/auth';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
+import ShareModal from '@/components/ui/ShareModal';
 
 interface ProfileViewProps {
   user: User | null;
@@ -39,6 +40,7 @@ interface ReviewRow {
 
 export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant }: ProfileViewProps) {
   const [reviews, setReviews] = useState<MyReview[] | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -91,6 +93,7 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
   const placeCount = reviews ? new Set(reviews.map((r) => r.restaurantId)).size : null;
 
   return (
+    <>
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bb-cream)', overflow: 'hidden' }}>
       {/* Header band */}
       <div style={{ background: 'var(--bb-cocoa)', padding: isMobile ? '20px 16px' : '32px 48px', display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: 'wrap', flexShrink: 0 }}>
@@ -113,6 +116,17 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
               <div style={{ fontSize: 11, color: 'rgba(255,250,240,0.65)' }}>{s.sub}</div>
             </div>
           ))}
+          <button
+            onClick={() => setShareOpen(true)}
+            style={{
+              background: 'var(--bb-amber)', border: 'none',
+              color: 'var(--bb-cocoa)', padding: '9px 16px', borderRadius: 999,
+              fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            <Icon name="share" size={14} color="var(--bb-cocoa)" /> Oszd meg
+          </button>
           <button
             onClick={signOut}
             style={{
@@ -183,5 +197,16 @@ export default function ProfileView({ user, onLogin, isMobile, onOpenRestaurant 
         )}
       </div>
     </div>
+
+    {shareOpen && (
+      <ShareModal
+        url={`${window.location.origin}/`}
+        title="BrownieBíró — értékeld a brownie-kat!"
+        heading="Hívd meg a barátaidat"
+        subtitle="Oszd meg a BrownieBírót, hogy ők is értékelhessenek."
+        onClose={() => setShareOpen(false)}
+      />
+    )}
+    </>
   );
 }

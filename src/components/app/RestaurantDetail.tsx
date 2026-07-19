@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
 import Modal from '@/components/ui/Modal';
+import ShareModal from '@/components/ui/ShareModal';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 import { initials, signInWithGoogle } from '@/lib/auth';
@@ -31,6 +32,7 @@ interface ReviewRow {
 export default function RestaurantDetail({ restaurant: r, live, user, onClose, onSubmitReview }: RestaurantDetailProps) {
   // null = loading
   const [reviews, setReviews] = useState<Review[] | null>(live ? null : []);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (!live) return;
@@ -107,6 +109,7 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
   ];
 
   return (
+    <>
     <Modal onClose={onClose}>
         {/* Nav row */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px 8px', gap: 10, flexShrink: 0 }}>
@@ -122,6 +125,17 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
             <Icon name="arrow-left" size={18} />
           </button>
           <div style={{ flex: 1 }} />
+          <button
+            onClick={() => setShareOpen(true)}
+            aria-label="Megosztás"
+            style={{
+              background: 'var(--bb-paper)', border: '1px solid var(--bb-line)',
+              width: 38, height: 38, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+          >
+            <Icon name="share" size={17} />
+          </button>
         </div>
 
         {/* Scrollable content */}
@@ -289,5 +303,16 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
           )}
         </div>
       </Modal>
+
+      {shareOpen && (
+        <ShareModal
+          url={`${window.location.origin}/?focus=${r.slug ?? r.id}`}
+          title={`${r.name} · BrownieBíró`}
+          heading="Oszd meg ezt a helyet"
+          subtitle="Küldd el a barátaidnak, vagy olvassák be a QR-kódot."
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+    </>
   );
 }

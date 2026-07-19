@@ -2,6 +2,13 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — Logo
+
+- Real logo: a friendly Hungarian "bíró" (judge) mascot in a circular amber-ring badge
+  (`public/logo-judge.png`, AI-generated, background cut). Replaces the old placeholder
+  `BrandMark` in the header + Impresszum, and is now the browser/app icon
+  (`app/icon.png`, `app/apple-icon.png`). Removed `BrandMark` and the default favicon.
+
 ## 2026-07-19 — Sharing
 
 - **Share** (`components/ui/ShareModal`): share button in the restaurant detail (shares a

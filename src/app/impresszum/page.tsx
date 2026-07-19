@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import BrandMark from '@/components/ui/BrandMark';
 
 export const metadata: Metadata = {
   title: 'Impresszum — BrownieBíró',
@@ -18,7 +17,8 @@ export default function ImpresszumPage() {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
-          <BrandMark size={40} color="var(--bb-brick)" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-judge.png" alt="BrownieBíró logó" width={48} height={48} style={{ display: 'block' }} />
           <div>
             <h1 style={{ fontFamily: 'var(--font-fraunces, serif)', fontStyle: 'italic', fontWeight: 600, fontSize: 32, margin: 0, color: 'var(--bb-cocoa)' }}>
               BrownieBíró

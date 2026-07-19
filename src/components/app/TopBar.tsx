@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import BrandMark from '@/components/ui/BrandMark';
 import Icon from '@/components/ui/Icon';
 import type { ActiveView } from '@/types';
 import { signOut, displayName, initials } from '@/lib/auth';
@@ -28,7 +27,8 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
 
   const brandEl = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-      <BrandMark size={isMobile ? 24 : 28} color="var(--bb-brick)" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo-judge.png" alt="BrownieBíró logó" width={isMobile ? 28 : 32} height={isMobile ? 28 : 32} style={{ flexShrink: 0, display: 'block' }} />
       <h1 style={{
         margin: 0,
         fontFamily: 'var(--font-fraunces, serif)',

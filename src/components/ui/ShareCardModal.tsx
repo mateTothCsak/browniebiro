@@ -55,9 +55,10 @@ export default function ShareCardModal({ reviewId, restaurantName, onClose }: Sh
           </button>
         </div>
 
-        {/* Live preview of the generated card */}
+        {/* Live preview of the generated card (portrait — cap height so the
+            buttons stay visible on small screens). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={cardUrl} alt="Értékelés kártya" style={{ width: '100%', borderRadius: 12, border: '1px solid var(--bb-line)', display: 'block', background: 'var(--bb-cream-2)' }} />
+        <img src={cardUrl} alt="Értékelés kártya" style={{ width: '100%', maxHeight: '56vh', objectFit: 'contain', borderRadius: 12, border: '1px solid var(--bb-line)', display: 'block', background: 'var(--bb-cream-2)' }} />
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={shareImage} disabled={busy} className="bb-btn bb-btn-primary" style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: busy ? 0.6 : 1 }}>

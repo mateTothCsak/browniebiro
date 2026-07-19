@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import Stars from '@/components/ui/Stars';
 import Icon from '@/components/ui/Icon';
-import BrowniePinIcon from '@/components/ui/BrowniePinIcon';
 import Modal from '@/components/ui/Modal';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
@@ -108,6 +107,9 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
     { label: 'Fagyi',   value: r.ice_cream_avg ?? 0, color: 'var(--bb-leaf)' },
   ];
 
+  // Hero shows the most recent real review photo (if any) — no generic placeholder.
+  const heroPhoto = reviews?.find((rev) => rev.photo_url)?.photo_url ?? null;
+
   return (
     <Modal onClose={onClose}>
         {/* Nav row */}
@@ -128,15 +130,13 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
 
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 24px' }}>
-          {/* Hero — brownie illustration banner (becomes the AI brownie image later) */}
-          <div style={{
-            height: 160, marginBottom: 14, borderRadius: 18,
-            background: 'linear-gradient(135deg, var(--bb-cocoa), var(--bb-pecan))',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden',
-          }}>
-            <BrowniePinIcon size={78} />
-          </div>
+          {/* Hero — most recent review photo, if any (nothing when there are none) */}
+          {heroPhoto && (
+            <div style={{ height: 180, marginBottom: 14, borderRadius: 18, overflow: 'hidden' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={heroPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </div>
+          )}
 
           {/* Tag chips */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>

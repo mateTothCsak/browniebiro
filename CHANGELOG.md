@@ -2,6 +2,12 @@
 
 Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
+## 2026-07-19 — QA fixes
+
+- Restaurant detail hero: dropped the generic brownie-illustration banner (added no
+  info, looked off). It now shows the most recent review photo when one exists, and
+  nothing otherwise.
+
 ## 2026-07-19 — Cleanup refactor (no behavior change)
 
 Code-review pass to keep the codebase from drifting into spaghetti:

@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://browniebiro.vercel.app';
-const TITLE = 'BrownieBíró — Hol a legjobb Burger King brownie?';
+const TITLE = 'BrownieBíró';
 const DESCRIPTION = 'Értékeld és fedezd fel Magyarország legjobb Burger King brownie-jait. Nem hivatalos Burger King brownie rajongói oldal · független értékelések.';
 
 export const metadata: Metadata = {

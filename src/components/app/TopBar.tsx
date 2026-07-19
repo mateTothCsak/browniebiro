@@ -28,7 +28,7 @@ export default function TopBar({ activeView, onViewChange, searchQuery, onSearch
   const brandEl = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo-judge.png" alt="BrownieBíró logó" width={isMobile ? 28 : 32} height={isMobile ? 28 : 32} style={{ flexShrink: 0, display: 'block' }} />
+      <img src="/logo-judge.png" alt="BrownieBíró logó" width={isMobile ? 34 : 40} height={isMobile ? 34 : 40} style={{ flexShrink: 0, display: 'block' }} />
       <h1 style={{
         margin: 0,
         fontFamily: 'var(--font-fraunces, serif)',

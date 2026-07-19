@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import type { Map as LeafletMapInstance, Marker } from 'leaflet';
 import type { Restaurant } from '@/types';
+import { isHot } from '@/lib/data';
 
 interface LeafletMapProps {
   restaurants: Restaurant[];
@@ -72,13 +73,14 @@ export default function LeafletMap({ restaurants, selectedId, onSelect }: Leafle
 
       restaurants.forEach((r) => {
         const isSelected = r.id === selectedId;
-        const graded = r.reviews > 0;
         // Every place is a brownie pin (Google-Maps style: pins are places,
-        // ratings show on click). Graded places get a small brick dot badge.
+        // ratings show on click). Only "hot" (highly-rated) places get the dot,
+        // so it stays a sparse highlight rather than marking every reviewed spot.
+        const hot = isHot(r.score, r.reviews);
         const html = `
           <div class="bb-pin${isSelected ? ' selected' : ''}">
             <img src="/brownie.png" width="36" height="36" alt="" draggable="false" />
-            ${graded ? '<span class="bb-pin-dot"></span>' : ''}
+            ${hot ? '<span class="bb-pin-dot"></span>' : ''}
           </div>`;
 
         const icon = L.divIcon({

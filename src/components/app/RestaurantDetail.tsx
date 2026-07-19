@@ -8,6 +8,7 @@ import Modal from '@/components/ui/Modal';
 import type { Restaurant, Review } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 import { initials, signInWithGoogle } from '@/lib/auth';
+import { isHot } from '@/lib/data';
 
 interface RestaurantDetailProps {
   restaurant: Restaurant;
@@ -142,7 +143,7 @@ export default function RestaurantDetail({ restaurant: r, live, user, onClose, o
           <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
             <span className="bb-chip brick"><Icon name="pin" size={11} /> {r.city}</span>
             {r.district && <span className="bb-chip">{r.district}</span>}
-            {r.reviews > 0 && r.score >= 4.5 && <span className="bb-chip amber"><Icon name="flame" size={11} /> Forró</span>}
+            {isHot(r.score, r.reviews) && <span className="bb-chip amber"><Icon name="flame" size={11} /> Forró</span>}
             {r.reviews >= 100 && <span className="bb-chip leaf"><Icon name="check" size={11} /> Népszerű</span>}
           </div>
 

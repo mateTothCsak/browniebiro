@@ -77,3 +77,12 @@ export const HU_RESTAURANTS: Restaurant[] = [
 export const BROWNIE_TAGS = [
   'szaftos', 'csokis', 'friss', 'meleg', 'száraz', 'kemény', 'drága', 'olcsó', 'nagy adag', 'átlagos',
 ];
+
+/**
+ * "Forró" — a standout, highly-rated place. Drives both the map's hot-pin dot and
+ * the "Forró" chip in the detail view, so they stay in sync. Deliberately a high bar
+ * so the marker stays sparse even when most places have reviews.
+ */
+export function isHot(score: number, reviews: number): boolean {
+  return reviews > 0 && score >= 4.5;
+}

@@ -4,6 +4,10 @@ Notable changes to BrownieBíró, newest first. Dates in Europe/Budapest.
 
 ## 2026-07-19 — QA fixes
 
+- **Profile** now lists the user's own reviews (restaurant, score, stars, date, photo,
+  tags), newest first; stats derive from the same data; each card opens that place.
+- **Toplista** gained a "Legnépszerűbb vélemények" section — the community's most-liked
+  reviews (appears only once reviews have likes).
 - Restaurant detail hero: dropped the generic brownie-illustration banner (added no
   info, looked off). It now shows the most recent review photo when one exists, and
   nothing otherwise.
